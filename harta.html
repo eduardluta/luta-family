@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harta e pronave — Familja Luta</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
+<style>
+  html, body { height: 100%; margin: 0; }
+  #map { position: absolute; inset: 0; }
+  .luta-panel {
+    position: absolute; top: 12px; left: 12px; z-index: 1000;
+    width: min(300px, calc(100vw - 24px)); max-height: calc(100% - 24px);
+    overflow: auto; background: color-mix(in srgb, var(--color-bg) 96%, transparent);
+    border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md); padding: 14px 16px;
+  }
+  .luta-panel h1 { font-size: 19px; margin: 0 0 2px; }
+  .luta-panel .sub {
+    font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--color-neutral-600); margin-bottom: 10px;
+  }
+  .luta-place {
+    display: flex; gap: 10px; align-items: baseline; width: 100%; text-align: left;
+    background: none; border: 0; border-top: 1px solid var(--color-divider);
+    padding: 9px 2px; cursor: pointer; font-family: var(--font-body);
+  }
+  .luta-place:hover { background: color-mix(in srgb, var(--color-accent) 8%, transparent); }
+  .luta-place b { font-family: var(--font-heading); font-weight: 600; font-size: 15px; }
+  .luta-place small {
+    color: var(--color-neutral-600); font-size: 11.5px; margin-left: auto;
+    text-align: right; font-variant-numeric: tabular-nums;
+  }
+  .luta-note {
+    font-size: 11px; color: var(--color-neutral-600);
+    border-top: 1px solid var(--color-divider); padding-top: 9px; margin-top: 2px; line-height: 1.55;
+  }
+  .leaflet-popup-content { font-family: var(--font-body); font-size: 13px; line-height: 1.55; }
+  .leaflet-popup-content b { font-family: var(--font-heading); font-size: 15px; }
+  .leaflet-popup-content em { color: var(--color-neutral-600); font-size: 11.5px; }
+  .luta-lbl {
+    background: transparent; border: 0; box-shadow: none;
+    font-family: var(--font-heading); font-weight: 600; font-size: 13px; color: var(--color-text);
+  }
+  .luta-lbl::before { display: none; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="luta-panel">
+  <h1>Pronat e familjes Luta</h1>
+  <div class="sub">Sipas tapive · deri më 1936</div>
+  <div id="places"></div>
+  <div class="luta-note">Shenjat tregojnë qendrat e fshatrave ku shtriheshin pronat — jo kufijtë e saktë të parcelave (regjistri kadastral i vitit 1936 nuk ka koordinata). Rrethi i artë tregon madhësinë e sipërfaqes. Vendet me <em>≈</em> janë të përafërta — dërgoni saktësime përmes sugjerimeve në trung.</div>
+</div>
+
+<script src="assets/vendor/leaflet/leaflet.js"></script>
+<script>
+/**
+ * The 1936 cadastral register lists parcel numbers and areas but no
+ * coordinates, so a marker is the centre of the village a property sat in, not
+ * its boundary. The gold circle is drawn to the true area — it shows how much
+ * land, not which land. Approximate village positions are dashed and marked ≈.
+ */
+var PLACES = [
+  { n: 'Pejë',      ll: [42.6593, 20.2887], ha: 31.32, approx: false, kulla: '3 kulla (shpëtuan nga kolonizimi)', info: 'Fushat 31h 31a 78m² — Gradinat, objektet e ish-fabrikave deri te tyrbja — u regjistruan si pronë shtetërore më 1920.' },
+  { n: 'Sigë',      ll: [42.7094, 20.3056], ha: 79.48, approx: false, kulla: '9 kulla', info: '79h 47a 74m² gjithsej: 25h 80a 75m² pronë shtetërore, 53h 66a 97m² iu ndanë 9 familjeve kolonistëve (reforma 1936).' },
+  { n: 'Bajincë',   ll: [42.752,  20.554 ], ha: 68.49, approx: true,  kulla: '2 kulla (mbetën familjes)', info: '68h 49a 41m² — nga 1923 aty u vendosën Mustafa dhe Xheladini; 61h 69a 48m² shpëtuan nga kolonizimi, 6h 79a 93m² u morën më 1920.' },
+  { n: 'Qungur',    ll: [42.647,  20.330 ], ha: 8.06,  approx: true,  kulla: '—', info: '8h 05a 93m² — u kolonizuan si pronë shtetërore me reformën e vitit 1920.' },
+  { n: 'Brestovik', ll: [42.700,  20.297 ], ha: 5.18,  approx: true,  kulla: '—', info: '5h 17a 61m²: 3h 56a 01m² pronë shtetërore, 1h 61a 60m² iu ndanë kolonistëve.' },
+  { n: 'Pozharë',   ll: [42.590,  20.330 ], ha: 5.68,  approx: true,  kulla: '—', info: '5h 67a 68m² — iu ndanë kolonistit Mihajllo Shaliq (reforma 1936).' },
+  { n: 'Novosellë', ll: [42.705,  20.320 ], ha: 3.91,  approx: true,  kulla: '—', info: '3h 91a 11m² — u kolonizuan si pronë shtetërore me reformën e vitit 1920.' }
+];
+
+var GOLD = '#b68235';
+var map = L.map('map', { zoomControl: true });
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors',
+  maxZoom: 19
+}).addTo(map);
+
+var bounds = [];
+var markers = {};
+
+PLACES.forEach(function (p) {
+  bounds.push(p.ll);
+  // Radius of a circle whose area equals the holding, so the marks compare.
+  L.circle(p.ll, {
+    radius: Math.sqrt((p.ha * 10000) / Math.PI),
+    color: GOLD, weight: 1.2, dashArray: p.approx ? '5 7' : null,
+    fillColor: GOLD, fillOpacity: 0.13
+  }).addTo(map);
+
+  var m = L.circleMarker(p.ll, {
+    radius: 6.5, color: GOLD, weight: 2, fillColor: '#f3f2f2', fillOpacity: 1
+  }).addTo(map);
+  m.bindPopup(
+    '<b>' + p.n + (p.approx ? ' ≈' : '') + '</b><br>' +
+    (p.kulla !== '—' ? p.kulla + '<br>' : '') + p.info +
+    (p.approx ? '<br><em>Vendndodhje e përafërt e fshatit.</em>' : '')
+  );
+  m.bindTooltip(L.tooltip({ permanent: true, direction: 'bottom', offset: [0, 8], className: 'luta-lbl' }).setContent(p.n));
+  markers[p.n] = m;
+});
+
+/**
+ * Leaflet measures its container once. This page loads inside a drawer iframe,
+ * which can be zero-sized at that moment — and a fitBounds against zero lands
+ * on a single street instead of the whole region. So the fit is re-run whenever
+ * the container changes size, until the reader takes over the view themselves.
+ */
+var userMoved = false;
+var autoFitting = false;
+
+function fitAll() {
+  autoFitting = true;
+  map.fitBounds(bounds, { padding: [40, 40], animate: false });
+  autoFitting = false;
+}
+
+map.on('dragstart zoomstart', function () { if (!autoFitting) userMoved = true; });
+
+function refresh() {
+  map.invalidateSize(false);
+  if (!userMoved) fitAll();
+}
+
+fitAll();
+window.addEventListener('resize', refresh);
+if (typeof ResizeObserver !== 'undefined') {
+  new ResizeObserver(refresh).observe(document.getElementById('map'));
+}
+
+var list = document.getElementById('places');
+PLACES.forEach(function (p) {
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'luta-place';
+  b.innerHTML = '<b>' + p.n + (p.approx ? ' ≈' : '') + '</b><small>' +
+    (p.kulla !== '—' ? p.kulla.split(' (')[0] + ' · ' : '') +
+    p.ha.toFixed(2).replace('.', ',') + ' ha</small>';
+  b.addEventListener('click', function () {
+    map.flyTo(p.ll, 14, { duration: 0.8 });
+    markers[p.n].openPopup();
+  });
+  list.appendChild(b);
+});
+</script>
+</body>
+</html>

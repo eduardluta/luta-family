@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shqyrtimi i sugjerimeve — Familja Luta</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/site.css">
+<style>
+  /* This page is a tool, not part of the archive — it keeps the system's type
+     and colour but none of its editorial layout. */
+  .admin { max-width: 860px; margin: 0 auto; padding: 32px 24px 80px; }
+  .admin-head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+  .admin-head h1 { font-size: 32px; font-weight: 400; margin: 0; }
+  .gate { max-width: 420px; margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+  .filters { display: flex; gap: 6px; margin: 24px 0 16px; flex-wrap: wrap; align-items: center; }
+  .filters .count { margin-left: auto; font-size: 12.5px; color: var(--color-neutral-600); }
+  .filter.is-on { border-color: var(--color-accent); color: var(--color-accent-700); }
+  .queue { display: flex; flex-direction: column; gap: 10px; }
+  .entry { border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 14px 16px; }
+  .entry-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .entry-person { font-family: var(--font-heading); font-weight: 600; font-size: 16px; }
+  .entry-meta { font-size: 11.5px; color: var(--color-neutral-600); font-variant-numeric: tabular-nums; }
+  .entry-text { font-size: 14.5px; line-height: 1.7; white-space: pre-wrap; margin: 8px 0 12px; }
+  .entry-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .empty { color: var(--color-neutral-600); font-size: 14px; padding: 28px 0; text-align: center; }
+  .note { font-size: 12.5px; color: var(--color-neutral-600); line-height: 1.7; margin-top: 6px; }
+  .msg { font-size: 13px; margin-top: 10px; }
+  .msg.is-error { color: var(--color-accent-800); }
+</style>
+</head>
+<body>
+<div class="admin">
+  <div class="admin-head">
+    <h1>Sugjerimet</h1>
+    <a href="index.html" style="font-size:13.5px">← Kthehu te trungu</a>
+  </div>
+  <p class="note">Çdo sugjerim vjen si propozim. Vetëm ato që i miraton këtu shfaqen në faqe.
+    Miratimi <strong>nuk</strong> e ndryshon vetë arkivin — korrigjimet e sakta bëhen në
+    <code>data/family.js</code>.</p>
+
+  <!-- Sign-in. The token only ever lives in sessionStorage: closing the tab ends it. -->
+  <form class="gate" id="gate">
+    <label class="field" for="token" style="font-size:12px">Fjalëkalimi i administratorit</label>
+    <input class="input" type="password" id="token" autocomplete="current-password" required>
+    <button class="btn btn-primary" type="submit" style="align-self:flex-start">Hyr</button>
+    <p class="msg" id="gate-msg" role="status"></p>
+  </form>
+
+  <div id="panel" hidden>
+    <div class="filters">
+      <button type="button" class="btn btn-secondary filter is-on" data-status="pending">Në pritje</button>
+      <button type="button" class="btn btn-secondary filter" data-status="approved">Të miratuara</button>
+      <button type="button" class="btn btn-secondary filter" data-status="rejected">Të refuzuara</button>
+      <button type="button" class="btn btn-secondary filter" data-status="all">Të gjitha</button>
+      <span class="count" id="count"></span>
+      <button type="button" class="btn btn-ghost" id="signout">Dil</button>
+    </div>
+    <div class="queue" id="queue"></div>
+    <p class="msg" id="msg" role="status"></p>
+  </div>
+</div>
+
+<script type="module">
+import { API_BASE } from './assets/js/config.js';
+import { get } from './assets/js/model.js';
+
+const $ = (s) => document.querySelector(s);
+const KEY = 'luta-admin-token';
+let token = sessionStorage.getItem(KEY) || '';
+let status = 'pending';
+
+const api = (path, options = {}) =>
+  fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json', ...(options.headers || {}) },
+  });
+
+function say(el, text, isError) {
+  el.textContent = text;
+  el.className = `msg${isError ? ' is-error' : ''}`;
+}
+
+async function load() {
+  const queue = $('#queue');
+  if (!API_BASE) {
+    queue.replaceChildren(Object.assign(document.createElement('p'), {
+      className: 'empty',
+      textContent: 'API_BASE nuk është caktuar në assets/js/config.js — s\'ka ku të lexohen sugjerimet.',
+    }));
+    return;
+  }
+  say($('#msg'), 'Duke ngarkuar…');
+  let body;
+  try {
+    const res = await api(`/api/admin/suggestions?status=${status}`);
+    if (res.status === 401) { signOut('Fjalëkalim i gabuar.'); return; }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    body = await res.json();
+  } catch (err) {
+    say($('#msg'), `Nuk u lidh dot me API-n: ${err.message}`, true);
+    return;
+  }
+  say($('#msg'), '');
+
+  const items = body.items || [];
+  $('#count').textContent = `${items.length} sugjerim${items.length === 1 ? '' : 'e'}`;
+
+  if (!items.length) {
+    queue.replaceChildren(Object.assign(document.createElement('p'), {
+      className: 'empty', textContent: 'Asnjë sugjerim këtu.',
+    }));
+    return;
+  }
+
+  queue.replaceChildren(...items.map(render));
+}
+
+function render(item) {
+  const person = get(item.personId);
+  const entry = document.createElement('div');
+  entry.className = 'entry';
+
+  const top = document.createElement('div');
+  top.className = 'entry-top';
+
+  const who = document.createElement('span');
+  who.className = 'entry-person';
+  who.textContent = person ? person.name : `(person i panjohur: ${item.personId})`;
+  top.append(who);
+
+  if (person) {
+    const link = document.createElement('a');
+    link.href = `index.html#/person/${item.personId}`;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.style.fontSize = '12px';
+    link.textContent = 'shiko në trung ↗';
+    top.append(link);
+  }
+
+  const meta = document.createElement('span');
+  meta.className = 'entry-meta';
+  meta.style.marginLeft = 'auto';
+  meta.textContent = `${item.author || 'Anonim'} · ${(item.createdAt || '').slice(0, 16).replace('T', ' ')}`;
+  top.append(meta);
+
+  const tag = document.createElement('span');
+  tag.className = `tag ${item.status === 'approved' ? 'tag-accent' : 'tag-neutral'}`;
+  tag.textContent = { pending: 'në pritje', approved: 'miratuar', rejected: 'refuzuar' }[item.status];
+  top.append(tag);
+
+  const text = document.createElement('p');
+  text.className = 'entry-text';
+  text.textContent = item.text;
+
+  const actions = document.createElement('div');
+  actions.className = 'entry-actions';
+  const add = (label, className, handler) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = `btn ${className}`;
+    b.style.fontSize = '13px';
+    b.textContent = label;
+    b.addEventListener('click', () => handler(b));
+    actions.append(b);
+  };
+
+  if (item.status !== 'approved') add('Mirato', 'btn-primary', (b) => act(item.id, 'approve', b));
+  if (item.status !== 'rejected') add('Refuzo', 'btn-secondary', (b) => act(item.id, 'reject', b));
+  if (item.status !== 'pending') add('Kthe në pritje', 'btn-secondary', (b) => act(item.id, 'unreview', b));
+  add('Fshij përgjithmonë', 'btn-ghost', (b) => remove(item.id, b));
+
+  entry.append(top, text, actions);
+  return entry;
+}
+
+async function act(id, action, button) {
+  button.disabled = true;
+  try {
+    const res = await api(`/api/admin/suggestions/${id}`, { method: 'POST', body: JSON.stringify({ action }) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    await load();
+  } catch (err) {
+    say($('#msg'), `Veprimi dështoi: ${err.message}`, true);
+    button.disabled = false;
+  }
+}
+
+async function remove(id, button) {
+  if (!confirm('Ta fshij përgjithmonë këtë sugjerim? Nuk kthehet.')) return;
+  button.disabled = true;
+  try {
+    const res = await api(`/api/admin/suggestions/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    await load();
+  } catch (err) {
+    say($('#msg'), `Fshirja dështoi: ${err.message}`, true);
+    button.disabled = false;
+  }
+}
+
+function signIn() {
+  $('#gate').hidden = true;
+  $('#panel').hidden = false;
+  load();
+}
+
+function signOut(message) {
+  token = '';
+  sessionStorage.removeItem(KEY);
+  $('#gate').hidden = false;
+  $('#panel').hidden = true;
+  if (message) say($('#gate-msg'), message, true);
+}
+
+$('#gate').addEventListener('submit', (e) => {
+  e.preventDefault();
+  token = $('#token').value.trim();
+  if (!token) return;
+  sessionStorage.setItem(KEY, token);
+  say($('#gate-msg'), '');
+  signIn();
+});
+
+$('#signout').addEventListener('click', () => signOut());
+
+document.querySelectorAll('.filter').forEach((b) =>
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.filter').forEach((x) => x.classList.remove('is-on'));
+    b.classList.add('is-on');
+    status = b.dataset.status;
+    load();
+  })
+);
+
+if (token) signIn();
+</script>
+</body>
+</html>

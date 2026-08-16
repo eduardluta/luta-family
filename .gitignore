@@ -1,0 +1,13 @@
+# Design handoff bundle and its zip — the inputs this site was built from.
+# Kept on disk for reference, out of the repo because the photos and the source
+# document are already committed in their proper places.
+_handoff/
+*-handoff.zip
+
+# Worker tooling
+api/node_modules/
+api/.wrangler/
+node_modules/
+
+# macOS
+.DS_Store

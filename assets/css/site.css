@@ -1,0 +1,360 @@
+/**
+ * Familja Luta — page styles.
+ *
+ * The design handoff carried everything as inline styles (design-tool output).
+ * Those are lifted into classes here, with the same values. Every colour, font,
+ * space and radius still comes from a token in tokens.css — no raw hexes.
+ */
+
+/* The `hidden` attribute is only `display: none` in the UA sheet, so any author
+   `display` — and this file sets `display: flex` on several things it also
+   toggles — silently beats it. Restate it so `hidden` always means hidden. */
+[hidden] { display: none !important; }
+
+html { scroll-behavior: smooth; }
+body { background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); min-height: 100vh; }
+a:hover { color: var(--color-accent-700); }
+summary::marker { color: var(--color-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* Skip link — the tree is a big interactive canvas, keyboard users need a way past it. */
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  background: var(--color-bg); color: var(--color-accent-700);
+  padding: var(--space-2) var(--space-3); border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md); font-size: 14px;
+}
+.skip-link:focus { left: var(--space-2); top: var(--space-2); }
+
+/* ── shared ─────────────────────────────────────────────────────────────── */
+.wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+.wrap-wide { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+.wrap-canvas { max-width: 1560px; margin: 0 auto; padding: 22px 24px 36px; }
+
+/* A heading flanked by hairlines — the section mark used throughout. */
+.rule-heading { display: flex; align-items: center; gap: 16px; }
+.rule-heading::before,
+.rule-heading::after { content: ''; height: 1px; flex: 1; background: var(--color-divider); }
+.rule-heading h2 { margin: 0; font-weight: 400; font-size: 38px; text-align: center; }
+
+.kicker {
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+.kicker-accent { color: var(--color-accent-700); letter-spacing: 0.24em; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* ── nav ────────────────────────────────────────────────────────────────── */
+/* Deliberately not sticky: the tree toolbar is the sticky element on this page,
+   and two things pinned to top:0 would sit on top of each other. */
+.nav { background: var(--color-bg); flex-wrap: wrap; row-gap: var(--space-1); }
+.nav-brand { min-width: 0; }
+.nav-note {
+  font-size: 12px; color: var(--color-neutral-600);
+  font-family: var(--font-body); font-weight: 400; margin-left: 8px;
+  white-space: nowrap;
+}
+
+/* ── header ─────────────────────────────────────────────────────────────── */
+.hero { max-width: 880px; margin: 0 auto; padding: 76px 24px 44px; text-align: center; }
+.hero h1 { font-size: clamp(46px, 7vw, 74px); font-weight: 400; margin: 0 0 16px; line-height: 1.02; }
+.hero-lede {
+  font-size: 17px; line-height: 1.7; color: var(--color-neutral-700);
+  max-width: 580px; margin: 0 auto;
+}
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px; background: var(--color-divider); margin-top: 44px;
+  border-top: 1px solid var(--color-divider); border-bottom: 1px solid var(--color-divider);
+}
+.stat { background: var(--color-bg); padding: 20px 10px; }
+.stat-n {
+  font-family: var(--font-heading); font-size: 36px; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat-l {
+  font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--color-neutral-600); margin-top: 7px;
+}
+
+/* ── historiati ─────────────────────────────────────────────────────────── */
+.chapter { display: flex; align-items: baseline; gap: 16px; margin: 52px 0 16px; }
+.chapter-num {
+  font-family: var(--font-heading); font-size: 52px; line-height: 1;
+  color: var(--color-accent-300);
+}
+.chapter h3 { margin: 0; font-size: 25px; }
+.chapter .btn { margin-left: auto; align-self: center; font-size: 13.5px; white-space: nowrap; }
+
+.prose { text-align: justify; font-size: 16px; line-height: 1.8; hyphens: auto; margin: 0 0 16px; }
+
+.pullquote {
+  border-top: 1px solid var(--color-divider); border-bottom: 1px solid var(--color-divider);
+  padding: 18px 8px; margin: 24px 0; text-align: center;
+}
+.pullquote p {
+  font-family: var(--font-heading); font-size: 21px; line-height: 1.5;
+  font-weight: 400; font-style: italic; margin: 0 auto; max-width: 540px;
+}
+
+.table-scroll { overflow-x: auto; margin: 20px 0; }
+.table-scroll .table { font-variant-numeric: tabular-nums; min-width: 560px; }
+.table tfoot td { font-weight: 600; }
+
+.registry { border: 1px solid var(--color-divider); border-radius: var(--radius-md); margin: 20px 0; }
+.registry > summary {
+  cursor: pointer; padding: 14px 16px;
+  font-family: var(--font-heading); font-weight: 600; font-size: 17px;
+}
+.registry-body {
+  padding: 2px 16px 16px; font-size: 13.5px; line-height: 1.75;
+  color: var(--color-neutral-800);
+}
+.registry-body p { margin: 0 0 10px; }
+
+.source-note {
+  font-size: 13px; color: var(--color-neutral-600); font-style: italic;
+  text-align: center; margin: 24px 0 0;
+}
+
+/* ── tree toolbar ───────────────────────────────────────────────────────── */
+.toolbar {
+  position: sticky; top: 0; z-index: 30; margin-top: 24px;
+  background: color-mix(in srgb, var(--color-bg) 94%, transparent);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--color-divider); border-bottom: 1px solid var(--color-divider);
+}
+.toolbar-inner {
+  max-width: 1160px; margin: 0 auto; padding: 10px 24px;
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.search { position: relative; flex: 1; min-width: 230px; max-width: 430px; }
+.search .input { height: 42px; background: var(--color-bg); }
+.search-results {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 45;
+  background: var(--color-surface); border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-md); overflow: hidden;
+}
+.search-empty { padding: 12px 14px; font-size: 13px; color: var(--color-neutral-600); }
+.search-hit {
+  display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+  width: 100%; padding: 11px 14px; background: none; border: 0;
+  border-bottom: 1px solid var(--color-divider); cursor: pointer;
+  font-family: var(--font-body); text-align: left;
+}
+.search-hit:last-child { border-bottom: 0; }
+.search-hit:hover,
+.search-hit[aria-selected='true'] { background: color-mix(in srgb, var(--color-accent) 8%, transparent); }
+.search-hit-name { font-size: 14px; color: var(--color-text); }
+.search-hit-meta {
+  font-size: 11px; color: var(--color-neutral-600); white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.gen-chips { display: flex; gap: 6px; overflow-x: auto; }
+.gen-chip {
+  height: 42px; min-width: 46px; padding: 0 12px;
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+  background: var(--color-bg); cursor: pointer;
+  font-family: var(--font-heading); font-weight: 600; font-size: 15px;
+  color: var(--color-neutral-800); white-space: nowrap;
+}
+.gen-chip:hover { border-color: var(--color-accent); color: var(--color-accent-700); }
+.zoom-controls { display: flex; gap: 6px; margin-left: auto; }
+.zoom-controls .btn { height: 42px; }
+.zoom-controls .btn-icon { width: 42px; }
+
+/* ── tree canvas ────────────────────────────────────────────────────────── */
+.viewport {
+  position: relative; overflow: hidden;
+  height: clamp(480px, 72vh, 860px);
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+  background: var(--color-neutral-100);
+  touch-action: none; cursor: grab; user-select: none;
+}
+.viewport.is-panning { cursor: grabbing; }
+.scene { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.scene svg { position: absolute; left: 0; top: 0; pointer-events: none; }
+.link-path { fill: none; stroke: var(--color-neutral-400); stroke-width: 1.2px; }
+
+.gen-line { position: absolute; left: 0; height: 0; border-top: 1px dashed var(--color-neutral-300); }
+.gen-mark {
+  position: absolute; left: 16px;
+  font-family: var(--font-heading); font-size: 44px; line-height: 1;
+  color: var(--color-accent-300);
+}
+
+.node {
+  position: absolute; width: 116px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: transparent; border: 0; padding: 6px 2px;
+  border-radius: var(--radius-md); cursor: pointer; font-family: var(--font-body);
+}
+.node:hover { background: color-mix(in srgb, var(--color-accent) 9%, transparent); }
+.node-photo, .node-initials {
+  width: 62px; height: 62px; border-radius: 50%; pointer-events: none; flex: none;
+}
+.node-photo {
+  object-fit: cover; border: 2px solid var(--color-accent-400);
+  box-shadow: 0 0 0 1px var(--color-divider);
+  filter: sepia(0.22) saturate(0.82) contrast(1.05);
+}
+.node-initials {
+  display: grid; place-items: center;
+  border: 1.5px solid var(--color-neutral-400); background: var(--color-bg);
+  font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-700);
+}
+.node-text { min-width: 0; max-width: 112px; pointer-events: none; }
+.node-name { display: block; font-size: 12.5px; line-height: 1.25; color: var(--color-text); }
+.node-years {
+  display: block; font-size: 10.5px; color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums; margin-top: 2px;
+}
+
+@keyframes lutaFlash { 0%, 65% { background: var(--color-accent-200); } 100% { background: transparent; } }
+.node.is-flash { animation: lutaFlash 2.4s ease-out; }
+
+.canvas-hint {
+  position: absolute; left: 12px; bottom: 10px; pointer-events: none;
+  font-size: 11px; color: var(--color-neutral-600);
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  padding: 4px 9px; border-radius: var(--radius-sm);
+}
+
+/* ── person dialog ──────────────────────────────────────────────────────── */
+.dialog-backdrop { z-index: 60; }
+.person-dialog { width: min(580px, 100%); max-height: 88vh; overflow: auto; gap: 14px; }
+.person-head { display: flex; gap: 16px; align-items: center; }
+.person-photo, .person-initials {
+  width: 84px; height: 84px; flex: none; border-radius: 50%;
+  border: 2px solid var(--color-accent-400);
+}
+.person-photo { object-fit: cover; filter: sepia(0.22) saturate(0.82) contrast(1.05); }
+.person-initials {
+  display: grid; place-items: center; background: var(--color-accent-100);
+  font-family: var(--font-heading); font-size: 28px; color: var(--color-accent-700);
+}
+.person-head .dialog-title { font-size: 25px; line-height: 1.1; }
+.person-years {
+  font-size: 13.5px; color: var(--color-neutral-600);
+  font-variant-numeric: tabular-nums; margin-top: 3px;
+}
+.person-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 9px; }
+
+.facts {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 13px 20px; border-top: 1px solid var(--color-divider); padding-top: 14px;
+}
+.fact-l {
+  font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+.fact-v { font-size: 14px; line-height: 1.55; margin-top: 3px; }
+.fact-v.tnum { font-variant-numeric: tabular-nums; }
+.fact-unset { color: var(--color-neutral-600); }
+
+.lineage {
+  font-size: 12.5px; line-height: 1.9; margin-top: 3px; color: var(--color-neutral-700);
+}
+.lineage button {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font: inherit; color: var(--color-accent-700); text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.lineage button:hover { color: var(--color-accent-800); }
+.lineage [aria-current='true'] { color: var(--color-text); font-weight: 600; }
+
+.partners { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.partner { display: flex; align-items: center; gap: 10px; }
+.partner img {
+  width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex: none;
+  border: 1.5px solid var(--color-accent-400);
+  filter: sepia(0.22) saturate(0.82) contrast(1.05);
+}
+.partner-name { font-size: 14px; }
+.partner-year { font-size: 12px; color: var(--color-neutral-600); font-variant-numeric: tabular-nums; }
+.union-note { font-size: 12px; color: var(--color-neutral-600); margin-top: 6px; font-style: italic; }
+
+.children { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.children .btn { padding: 6px 11px; font-size: 13px; }
+.socials { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+.socials .btn { padding: 3px 10px; font-size: 12px; text-decoration: none; }
+
+.bio-block { border-top: 1px solid var(--color-divider); padding-top: 12px; }
+.bio-block .fact-l { color: var(--color-accent-700); }
+.bio-text { font-size: 14.5px; line-height: 1.75; text-align: justify; margin: 7px 0 0; }
+.record-note { font-size: 11.5px; color: var(--color-neutral-600); font-style: italic; margin: 0; }
+
+/* ── suggestions ────────────────────────────────────────────────────────── */
+.suggest { border-top: 1px solid var(--color-divider); padding-top: 12px; }
+.suggest-head { display: flex; align-items: center; gap: 8px; }
+.suggest-head .btn { margin-left: auto; font-size: 12.5px; padding: 3px 8px; }
+.suggest-list { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
+.suggest-item { border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 9px 12px; }
+.suggest-meta { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.suggest-who {
+  font-size: 12.5px; color: var(--color-accent-700);
+  font-family: var(--font-heading); font-weight: 600;
+}
+.suggest-when { font-size: 11px; color: var(--color-neutral-600); font-variant-numeric: tabular-nums; }
+.suggest-text { font-size: 13.5px; line-height: 1.6; margin-top: 4px; }
+.suggest-form { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.suggest-form .input[type='text'] { max-width: 240px; }
+.suggest-form textarea { min-height: 76px; }
+.suggest-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.suggest-hint { font-size: 11px; color: var(--color-neutral-600); line-height: 1.5; max-width: 300px; }
+.suggest-status { font-size: 12.5px; line-height: 1.5; }
+.suggest-status.is-ok { color: var(--color-accent-700); }
+.suggest-status.is-error { color: var(--color-neutral-800); }
+/* Honeypot — a real person never sees or fills this. */
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* ── map drawer ─────────────────────────────────────────────────────────── */
+.map-backdrop {
+  position: fixed; inset: 0; z-index: 70;
+  background: color-mix(in srgb, var(--color-neutral-900) 45%, transparent);
+}
+.map-drawer {
+  position: absolute; top: 0; right: 0; bottom: 0; width: min(720px, 100vw);
+  background: var(--color-bg); border-left: 1px solid var(--color-divider);
+  box-shadow: var(--shadow-lg); display: flex; flex-direction: column;
+}
+.map-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px; border-bottom: 1px solid var(--color-divider);
+}
+.map-head h2 { font-family: var(--font-heading); font-size: 20px; font-weight: 600; margin: 0; }
+.map-head .btn { margin-left: auto; }
+.map-sub { font-size: 11.5px; color: var(--color-neutral-600); }
+.map-drawer iframe { flex: 1; border: 0; width: 100%; }
+
+/* ── footer ─────────────────────────────────────────────────────────────── */
+.site-footer {
+  border-top: 1px solid var(--color-divider);
+  padding: 30px 24px 44px; text-align: center;
+}
+.site-footer strong { font-family: var(--font-heading); font-size: 20px; font-weight: 600; display: block; }
+.site-footer p {
+  font-size: 12.5px; color: var(--color-neutral-600);
+  max-width: 540px; margin: 8px auto 0; line-height: 1.7;
+}
+
+/* ── narrow screens ─────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  /* "Pejë · nga viti 1700" is a subtitle, not information worth truncating the
+     name for — drop it rather than let the header overflow. */
+  .nav-note { display: none; }
+  .nav { gap: var(--space-3); padding: var(--space-3); }
+  .hero { padding: 48px 20px 32px; }
+  .chapter { gap: 12px; }
+  .chapter .btn { margin-left: 0; }
+  .chapter-num { font-size: 40px; }
+  .prose { text-align: left; hyphens: none; }
+  .toolbar-inner { padding: 10px 16px; }
+  .zoom-controls { margin-left: 0; }
+  .search { max-width: none; }
+}

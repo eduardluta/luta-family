@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Familja Luta — a pedigree chart reduced to its mark: one root, two
+       generations branching. Gold on the archival ground, per the design system. -->
+  <rect width="32" height="32" fill="#f3f2f2"/>
+  <g fill="none" stroke="#b68235" stroke-width="1.6" stroke-linecap="round">
+    <path d="M16 27v-4"/>
+    <path d="M9 23h14"/>
+    <path d="M9 23v-3M23 23v-3"/>
+    <path d="M6 16h6M20 16h6"/>
+    <path d="M6 16v-3M12 16v-3M20 16v-3M26 16v-3"/>
+    <path d="M9 20v-4M23 20v-4"/>
+  </g>
+  <circle cx="16" cy="28" r="2.4" fill="#b68235"/>
+  <g fill="#7d5411">
+    <circle cx="6" cy="11.5" r="1.8"/><circle cx="12" cy="11.5" r="1.8"/>
+    <circle cx="20" cy="11.5" r="1.8"/><circle cx="26" cy="11.5" r="1.8"/>
+  </g>
+</svg>

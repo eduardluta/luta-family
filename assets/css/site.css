@@ -94,7 +94,6 @@ summary::marker { color: var(--color-accent); }
   color: var(--color-accent-300);
 }
 .chapter h3 { margin: 0; font-size: 25px; }
-.chapter .btn { margin-left: auto; align-self: center; font-size: 13.5px; white-space: nowrap; }
 
 .prose { text-align: justify; font-size: 16px; line-height: 1.8; hyphens: auto; margin: 0 0 16px; }
 
@@ -229,12 +228,14 @@ summary::marker { color: var(--color-accent); }
 }
 
 .node {
-  position: absolute; width: 116px;
+  position: absolute; width: 148px;
   display: flex; flex-direction: column; align-items: center; gap: 6px;
   background: transparent; border: 0; padding: 6px 2px;
   border-radius: var(--radius-md); cursor: pointer; font-family: var(--font-body);
 }
 .node:hover { background: color-mix(in srgb, var(--color-accent) 9%, transparent); }
+/* The couple: person, marriage tie, spouse — one visual unit, one click target. */
+.node-faces { display: flex; align-items: center; justify-content: center; pointer-events: none; }
 .node-photo, .node-initials {
   width: 62px; height: 62px; border-radius: 50%; pointer-events: none; flex: none;
 }
@@ -248,11 +249,22 @@ summary::marker { color: var(--color-accent); }
   border: 1.5px solid var(--color-neutral-400); background: var(--color-bg);
   font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-700);
 }
-.node-text { min-width: 0; max-width: 112px; pointer-events: none; }
+.spouse-tie { width: 9px; height: 1px; background: var(--color-neutral-400); flex: none; }
+.node-spouses { display: flex; align-items: center; }
+.node-photo-sm, .node-initials-sm { width: 40px; height: 40px; }
+.node-photo-sm { border-width: 1.5px; }
+.node-initials-sm { font-size: 13px; color: var(--color-neutral-700); }
+/* A second spouse tucks behind the first rather than widening the node. */
+.node-spouses > * + * { margin-left: -12px; }
+.node-text { min-width: 0; max-width: 144px; pointer-events: none; }
 .node-name { display: block; font-size: 12.5px; line-height: 1.25; color: var(--color-text); }
 .node-years {
   display: block; font-size: 10.5px; color: var(--color-neutral-600);
   font-variant-numeric: tabular-nums; margin-top: 2px;
+}
+.node-spouse {
+  display: block; font-size: 10px; color: var(--color-neutral-600);
+  margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 @keyframes lutaFlash { 0%, 65% { background: var(--color-accent-200); } 100% { background: transparent; } }
@@ -264,6 +276,17 @@ summary::marker { color: var(--color-accent); }
   background: color-mix(in srgb, var(--color-bg) 88%, transparent);
   padding: 4px 9px; border-radius: var(--radius-sm);
 }
+
+/* Shown briefly when a plain wheel rolls over the canvas — the page scrolled,
+   and this says how to zoom instead. Same pattern as embedded maps. */
+.wheel-hint {
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  display: grid; place-items: center; text-align: center; padding: 0 24px;
+  background: color-mix(in srgb, var(--color-neutral-900) 32%, transparent);
+  color: var(--color-neutral-100); font-size: 15px; line-height: 1.5;
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.wheel-hint.is-on { opacity: 1; }
 
 /* ── person dialog ──────────────────────────────────────────────────────── */
 @keyframes dlgFade { from { opacity: 0; } }
@@ -378,27 +401,18 @@ summary::marker { color: var(--color-accent); }
 /* Honeypot — a real person never sees or fills this. */
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
-/* ── map drawer ─────────────────────────────────────────────────────────── */
-@keyframes drawerIn { from { transform: translateX(32px); opacity: 0.4; } }
-.map-backdrop {
-  position: fixed; inset: 0; z-index: 70;
-  background: color-mix(in srgb, var(--color-neutral-900) 45%, transparent);
-  animation: dlgFade 0.18s ease-out;
+/* ── property map, embedded as the section's closing figure ─────────────── */
+.map-plate { margin: 52px 0 0; }
+.map-plate > figcaption {
+  text-align: center; font-size: 11.5px; letter-spacing: 0.14em;
+  margin-bottom: 14px; padding: 0 24px;
 }
-.map-drawer {
-  position: absolute; top: 0; right: 0; bottom: 0; width: min(720px, 100vw);
-  background: var(--color-bg); border-left: 1px solid var(--color-divider);
-  box-shadow: var(--shadow-lg); display: flex; flex-direction: column;
-  animation: drawerIn 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+.map-frame { border-block: 1px solid var(--color-divider); }
+.map-frame iframe {
+  display: block; width: 100%; border: 0;
+  height: clamp(400px, 62vh, 640px);
+  height: clamp(400px, 62svh, 640px);
 }
-.map-head {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 18px; border-bottom: 1px solid var(--color-divider);
-}
-.map-head h2 { font-family: var(--font-heading); font-size: 20px; font-weight: 600; margin: 0; }
-.map-head .btn { margin-left: auto; }
-.map-sub { font-size: 11.5px; color: var(--color-neutral-600); }
-.map-drawer iframe { flex: 1; border: 0; width: 100%; }
 
 /* ── footer ─────────────────────────────────────────────────────────────── */
 .site-footer {
@@ -428,7 +442,6 @@ summary::marker { color: var(--color-accent); }
   .stat-n { font-size: 30px; }
 
   .chapter { gap: 12px; flex-wrap: wrap; }
-  .chapter .btn { margin-left: 0; }
   .chapter-num { font-size: 40px; }
   .prose { text-align: left; hyphens: none; }
 
@@ -444,4 +457,9 @@ summary::marker { color: var(--color-accent); }
   }
   .viewport::before, .viewport::after { width: 20px; }
   .canvas-hint { display: none; }
+
+  .map-frame iframe {
+    height: clamp(340px, 52vh, 520px);
+    height: clamp(340px, 52svh, 520px);
+  }
 }

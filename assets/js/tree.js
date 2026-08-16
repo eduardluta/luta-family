@@ -13,13 +13,14 @@
 
 import { PEOPLE, ROMAN, get, childrenOf, treeLabel, initials, lifespan } from './model.js';
 
-/* Layout constants, carried over from the design so spacing matches the mock. */
-const SLOT_W = 118;   // horizontal pitch of one leaf column
+/* Layout constants. The slot is wider than the design's 118px because a node
+   now carries the spouse beside the person — the couple needs the room. */
+const SLOT_W = 150;   // horizontal pitch of one leaf column
 const LEVEL_H = 200;  // vertical pitch of one generation
 const PAD_X = 190;    // gutter left of the first column, clear of the roman numerals
 const PAD_TOP = 130;
-const NODE_W = 116;
-const NODE_H = 104;   // where a connector leaves the bottom of a node
+const NODE_W = 148;
+const NODE_H = 116;   // where a connector leaves the bottom of a node
 
 const MIN_SCALE = 0.05;
 const MAX_SCALE = 1.8;
@@ -204,8 +205,20 @@ export class TreeCanvas {
 
       const years = lifespan(person);
       const label = treeLabel(person);
+      const partners = person.partners || [];
+      const spouseGivens = partners.map((q) => q.name.split(/\s+/)[0]);
       btn.title = years ? `${person.name} · ${years}` : person.name;
-      btn.setAttribute('aria-label', `${person.name}${years ? `, ${years}` : ''}`);
+      btn.setAttribute(
+        'aria-label',
+        `${person.name}${years ? `, ${years}` : ''}` +
+          (spouseGivens.length ? `, me ${spouseGivens.join(' dhe ')}` : '')
+      );
+
+      // The couple, drawn as genealogy charts draw it: the person, a short
+      // marriage tie, and the spouse smaller beside them. Children's connectors
+      // descend from the centre of the pair.
+      const faces = document.createElement('span');
+      faces.className = 'node-faces';
 
       if (person.photo) {
         const img = document.createElement('img');
@@ -216,14 +229,43 @@ export class TreeCanvas {
         img.decoding = 'async';
         img.width = 62;
         img.height = 62;
-        btn.append(img);
+        faces.append(img);
       } else {
         const span = document.createElement('span');
         span.className = 'node-initials';
         span.setAttribute('aria-hidden', 'true');
         span.textContent = initials(person);
-        btn.append(span);
+        faces.append(span);
       }
+
+      if (partners.length) {
+        const tie = document.createElement('i');
+        tie.className = 'spouse-tie';
+        faces.append(tie);
+        const group = document.createElement('span');
+        group.className = 'node-spouses';
+        for (const q of partners.slice(0, 2)) {
+          if (q.photo) {
+            const img = document.createElement('img');
+            img.className = 'node-photo node-photo-sm';
+            img.src = `assets/photos/${q.photo}`;
+            img.alt = '';
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.width = 40;
+            img.height = 40;
+            group.append(img);
+          } else {
+            const span = document.createElement('span');
+            span.className = 'node-initials node-initials-sm';
+            span.setAttribute('aria-hidden', 'true');
+            span.textContent = initials({ name: q.name });
+            group.append(span);
+          }
+        }
+        faces.append(group);
+      }
+      btn.append(faces);
 
       const text = document.createElement('span');
       text.className = 'node-text';
@@ -236,6 +278,12 @@ export class TreeCanvas {
         y2.className = 'node-years';
         y2.textContent = years;
         text.append(y2);
+      }
+      if (spouseGivens.length) {
+        const sp = document.createElement('span');
+        sp.className = 'node-spouse';
+        sp.textContent = `& ${spouseGivens.join(' & ')}`;
+        text.append(sp);
       }
       btn.append(text);
 
@@ -357,11 +405,28 @@ export class TreeCanvas {
   #bind() {
     const vp = this.viewport;
 
+    /* Cooperative zoom, the way embedded maps do it. A full-bleed canvas that
+       swallows every wheel event traps the reader: scrolling back up the page
+       turns into unwanted zooming. So a plain wheel is left alone — the page
+       scrolls — and Ctrl+wheel zooms. Trackpad pinches arrive as wheel events
+       with ctrlKey set, so pinch-to-zoom keeps working untouched. */
+    this.wheelHintEl = vp.querySelector('.wheel-hint');
+    if (this.wheelHintEl) {
+      const mac = /mac/i.test(navigator.platform || '');
+      this.wheelHintEl.textContent = mac
+        ? 'Mbaje ⌘ ose Ctrl dhe rrotullo për ta zmadhuar trungun'
+        : 'Mbaje Ctrl dhe rrotullo për ta zmadhuar trungun';
+    }
     vp.addEventListener(
       'wheel',
       (e) => {
-        e.preventDefault();
-        this.zoomAt(Math.exp(-e.deltaY * 0.0016), e.clientX, e.clientY);
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          this.#hideWheelHint();
+          this.zoomAt(Math.exp(-e.deltaY * 0.0016), e.clientX, e.clientY);
+        } else {
+          this.#showWheelHint();
+        }
       },
       { passive: false }
     );
@@ -460,5 +525,17 @@ export class TreeCanvas {
 
   #capture(e) {
     try { this.viewport.setPointerCapture(e.pointerId); } catch { /* already captured */ }
+  }
+
+  #showWheelHint() {
+    if (!this.wheelHintEl) return;
+    this.wheelHintEl.classList.add('is-on');
+    clearTimeout(this._hintTimer);
+    this._hintTimer = setTimeout(() => this.#hideWheelHint(), 1400);
+  }
+
+  #hideWheelHint() {
+    clearTimeout(this._hintTimer);
+    this.wheelHintEl?.classList.remove('is-on');
   }
 }

@@ -53,7 +53,7 @@
   <h1>Pronat e familjes Luta</h1>
   <div class="sub">Sipas tapive · deri më 1936</div>
   <div id="places"></div>
-  <div class="luta-note">Shenjat tregojnë qendrat e fshatrave ku shtriheshin pronat — jo kufijtë e saktë të parcelave (regjistri kadastral i vitit 1936 nuk ka koordinata). Rrethi i artë tregon madhësinë e sipërfaqes. Vendet me <em>≈</em> janë të përafërta — dërgoni saktësime përmes sugjerimeve në trung.</div>
+  <div class="luta-note">Shenjat tregojnë qendrat e fshatrave ku shtriheshin pronat — jo kufijtë e saktë të parcelave (regjistri kadastral i vitit 1936 nuk ka koordinata). Rrethi i artë tregon madhësinë e sipërfaqes. Vendet me <em>≈</em> janë të përafërta — dërgoni saktësime përmes sugjerimeve në trung. Zmadho me + / −, me Ctrl + rrotë, ose me dy gishta.</div>
 </div>
 
 <script src="assets/vendor/leaflet/leaflet.js"></script>
@@ -75,11 +75,34 @@ var PLACES = [
 ];
 
 var GOLD = '#b68235';
-var map = L.map('map', { zoomControl: true });
+
+/**
+ * The map is embedded in the middle of the article, so it must not trap the
+ * page scroll: a plain wheel passes through (the page moves), Ctrl+wheel and
+ * trackpad pinch zoom the map, and on touch devices one-finger drags scroll
+ * the page while two fingers work the map — the embedded-map convention.
+ */
+var map = L.map('map', {
+  zoomControl: true,
+  scrollWheelZoom: false,
+  dragging: !L.Browser.mobile
+});
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap contributors',
   maxZoom: 19
 }).addTo(map);
+
+document.getElementById('map').addEventListener('wheel', function (e) {
+  if (e.ctrlKey || e.metaKey) {
+    e.preventDefault();
+    // animate:false — wheel zoom should track the hand instantly, like the tree.
+    map.setZoomAround(
+      map.mouseEventToLatLng(e),
+      map.getZoom() + (e.deltaY < 0 ? 1 : -1),
+      { animate: false }
+    );
+  }
+}, { passive: false });
 
 var bounds = [];
 var markers = {};

@@ -92,7 +92,6 @@
     <div class="chapter">
       <span class="chapter-num" aria-hidden="true">IV</span>
       <div><h3>Pasuria dhe kolonizimi</h3><div class="kicker">14 kulla · 202 hektarë · Reformat 1920 dhe 1936</div></div>
-      <button type="button" class="btn btn-primary" id="open-map">Hape hartën →</button>
     </div>
     <p class="prose">Tahir <em>Ramë</em> Luta trashëgoi pasurinë nga i ati, Haxhiu: katërmbëdhjetë (14) kulla dhe 202 hektarë 11 ari 26 m². Nga kolonizimi shpëtuan tre (3) kulla në Pejë, si dhe dy kulla e 61 hektarë 69 ari 48 m² në fshatin Bajincë.</p>
 
@@ -141,6 +140,13 @@
 
     <p class="source-note">Dokumenti origjinal — vendimi i reformës agrare i vitit 1936 — gjendet te Xhafer Luta në Pejë.</p>
   </div>
+
+  <figure class="map-plate">
+    <figcaption class="kicker">Harta e pronave · Pejë e rrethinë · sipas tapive dhe reformave 1920–1936</figcaption>
+    <div class="map-frame">
+      <iframe src="harta.html" title="Harta e pronave të familjes Luta" loading="lazy"></iframe>
+    </div>
+  </figure>
 </section>
 
 <section id="trungu" style="margin-top:72px">
@@ -166,7 +172,8 @@
     <div class="viewport" id="viewport" tabindex="0" role="application"
          aria-label="Trungu familjar — tërhiq për të lëvizur, rrotë ose pinch për zmadhim, shigjetat për lëvizje">
       <div class="scene" id="scene"></div>
-      <div class="canvas-hint">Tërhiq për të lëvizur · kliko personin</div>
+      <div class="wheel-hint" aria-hidden="true"></div>
+      <div class="canvas-hint">Tërhiq për të lëvizur · Ctrl + rrotë zmadhon · kliko personin</div>
       <div class="zoom-controls">
         <button type="button" class="btn btn-secondary btn-icon" id="zoom-in" title="Zmadho" aria-label="Zmadho">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -189,22 +196,6 @@
 </footer>
 
 <div id="dialog-host"></div>
-<div id="map-host"></div>
-
-<template id="map-template">
-  <div class="map-backdrop">
-    <div class="map-drawer" role="dialog" aria-modal="true" aria-label="Harta e pronave të familjes Luta">
-      <div class="map-head">
-        <div>
-          <h2>Harta e pronave</h2>
-          <div class="map-sub">Pejë e rrethinë · sipas tapive dhe reformave 1920–1936</div>
-        </div>
-        <button type="button" class="btn btn-secondary" data-close-map>Mbyll</button>
-      </div>
-      <iframe src="harta.html" title="Harta e pronave të familjes Luta" loading="lazy"></iframe>
-    </div>
-  </div>
-</template>
 
 </body>
 </html>

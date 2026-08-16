@@ -229,36 +229,6 @@ function applyRoute() {
 
 window.addEventListener('hashchange', applyRoute);
 
-/* ── property map drawer ─────────────────────────────────────────────────── */
-const mapHost = $('#map-host');
-const mapTemplate = $('#map-template');
-let closeMapDrawer = null;
-
-function openMap() {
-  if (closeMapDrawer) return;
-  const opener = document.activeElement;
-  const node = mapTemplate.content.cloneNode(true);
-  const backdrop = node.querySelector('.map-backdrop');
-  mapHost.append(node);
-
-  closeMapDrawer = () => {
-    backdrop.remove();
-    document.removeEventListener('keydown', onKey, true);
-    document.body.style.overflow = '';
-    closeMapDrawer = null;
-    if (opener instanceof HTMLElement && document.contains(opener)) opener.focus();
-  };
-  function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); closeMapDrawer(); } }
-
-  backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeMapDrawer(); });
-  backdrop.querySelector('[data-close-map]').addEventListener('click', () => closeMapDrawer());
-  document.addEventListener('keydown', onKey, true);
-  document.body.style.overflow = 'hidden';
-  backdrop.querySelector('[data-close-map]').focus();
-}
-
-$('#open-map').addEventListener('click', openMap);
-
 /* ── start ───────────────────────────────────────────────────────────────── */
 // Render the route immediately — approved suggestions are decoration and the
 // tree is usable without them.

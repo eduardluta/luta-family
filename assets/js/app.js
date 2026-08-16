@@ -260,6 +260,17 @@ function openMap() {
 $('#open-map').addEventListener('click', openMap);
 
 /* ── start ───────────────────────────────────────────────────────────────── */
-// Approved suggestions are decoration; the tree is already usable without them.
-loadApproved().then(applyRoute);
+// Render the route immediately — approved suggestions are decoration and the
+// tree is usable without them.
 applyRoute();
+
+// When they do arrive, a dialog opened from a deep link was built before they
+// existed and would otherwise never show them. Re-render just that one, and
+// only when this person actually has something to add.
+loadApproved().then((bySomeone) => {
+  if (!openId) { applyRoute(); return; }
+  if (!bySomeone?.get?.(openId)?.length) return;
+  const id = openId;
+  openId = null; // so showPerson does not treat this as a no-op
+  showPerson(id);
+});

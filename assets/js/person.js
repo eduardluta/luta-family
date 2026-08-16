@@ -123,7 +123,7 @@ export function renderPerson(person, onNavigate) {
   const lineageBox = el('div');
   lineageBox.append(el('div', 'fact-l', 'Linja familjare'));
   const chain = el('div', 'lineage');
-  lineage(person).forEach((ancestor, i, all) => {
+  lineage(person).forEach((ancestor, i) => {
     if (i) chain.append(document.createTextNode(' → '));
     const label = ancestor.gen <= 3 ? ancestor.name : given(ancestor);
     if (ancestor.id === person.id) {
@@ -136,7 +136,6 @@ export function renderPerson(person, onNavigate) {
       btn.addEventListener('click', () => onNavigate(ancestor.id));
       chain.append(btn);
     }
-    void all;
   });
   lineageBox.append(chain);
   dialog.append(lineageBox);
@@ -145,7 +144,7 @@ export function renderPerson(person, onNavigate) {
   const partners = person.partners || [];
   if (partners.length) {
     const box = el('div');
-    box.append(el('div', 'fact-l', partners.length > 1 ? 'Kurorëzuar me' : 'Kurorëzuar me'));
+    box.append(el('div', 'fact-l', 'Kurorëzuar me'));
     const list = el('div', 'partners');
     for (const p of partners) {
       const row = el('div', 'partner');

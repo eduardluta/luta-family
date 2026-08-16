@@ -27,10 +27,21 @@ In the repo: **Settings → Pages → Build and deployment → Source: GitHub Ac
 The workflow in `.github/workflows/deploy.yml` publishes the repo root on every
 push to `main`. There is no build step — it uploads the files as they are.
 
-### Point the domain
+### Point the domain — later
 
-The repo contains a `CNAME` file with `luta.family`, which tells Pages to serve
-the custom domain. At your DNS provider add:
+**Not set up yet:** `luta.family` is not registered, so the site is served from
+`https://eduardluta.github.io/luta-family/` and there is no `CNAME` in the repo
+root. A ready-made one is parked at `docs/CNAME.luta.family`.
+
+Once you own the domain, three things change together:
+
+1. `git mv docs/CNAME.luta.family CNAME`
+2. In `index.html`, set `<link rel="canonical">` and `og:url` to
+   `https://luta.family/`
+3. In `assets/js/config.js`, set `SITE_URL` to `https://luta.family` — and add
+   that origin to `ALLOWED_ORIGINS` in `api/wrangler.toml` if the API is running
+
+Then at your DNS provider add:
 
 | Type | Name | Value |
 |---|---|---|
@@ -43,10 +54,7 @@ the custom domain. At your DNS provider add:
 Then in **Settings → Pages**, set the custom domain to `luta.family` and tick
 **Enforce HTTPS** once the certificate is issued (usually within an hour).
 
-> If you do not own `luta.family` yet, register it first — `.family` is a normal
-> gTLD available from most registrars. Until then the site works at
-> `https://<username>.github.io/luta-family/`; delete the `CNAME` file for that
-> to work correctly.
+`.family` is an ordinary gTLD available from most registrars.
 
 ---
 

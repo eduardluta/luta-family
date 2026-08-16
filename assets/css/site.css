@@ -66,12 +66,18 @@ summary::marker { color: var(--color-accent); }
   font-size: 17px; line-height: 1.7; color: var(--color-neutral-700);
   max-width: 580px; margin: 0 auto;
 }
+/* A masthead strip, not a grid of cells: one hairline above, one below, and
+   short vertical rules between the figures — no enclosure. */
 .stats {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1px; background: var(--color-divider); margin-top: 44px;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 44px;
   border-top: 1px solid var(--color-divider); border-bottom: 1px solid var(--color-divider);
 }
-.stat { background: var(--color-bg); padding: 20px 10px; }
+.stat { position: relative; padding: 22px 10px; }
+.stat + .stat::before {
+  content: ''; position: absolute; left: 0; top: 22%; bottom: 22%;
+  width: 1px; background: var(--color-divider);
+}
 .stat-n {
   font-family: var(--font-heading); font-size: 36px; line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -105,13 +111,14 @@ summary::marker { color: var(--color-accent); }
 .table-scroll .table { font-variant-numeric: tabular-nums; min-width: 560px; }
 .table tfoot td { font-weight: 600; }
 
-.registry { border: 1px solid var(--color-divider); border-radius: var(--radius-md); margin: 20px 0; }
+.registry { border-block: 1px solid var(--color-divider); margin: 20px 0; }
 .registry > summary {
-  cursor: pointer; padding: 14px 16px;
+  cursor: pointer; padding: 14px 2px;
   font-family: var(--font-heading); font-weight: 600; font-size: 17px;
 }
+.registry > summary:hover { color: var(--color-accent-700); }
 .registry-body {
-  padding: 2px 16px 16px; font-size: 13.5px; line-height: 1.75;
+  padding: 2px 2px 16px; font-size: 13.5px; line-height: 1.75;
   color: var(--color-neutral-800);
 }
 .registry-body p { margin: 0 0 10px; }
@@ -133,7 +140,22 @@ summary::marker { color: var(--color-accent); }
   display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
 }
 .search { position: relative; flex: 1; min-width: 230px; max-width: 430px; }
-.search .input { height: 42px; background: var(--color-bg); }
+/* An underline field, not a boxed one — the toolbar already draws its own rules. */
+.search .input {
+  height: 44px; background: transparent;
+  border: 0; border-bottom: 1px solid var(--color-divider); border-radius: 0;
+  padding-left: 26px;
+}
+.search .input:hover { border-bottom-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.search .input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--color-accent);
+  box-shadow: 0 1px 0 0 var(--color-accent);
+}
+.search-icon {
+  position: absolute; left: 2px; top: 50%; translate: 0 -50%;
+  color: var(--color-neutral-500); pointer-events: none;
+}
 .search-results {
   position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 45;
   background: var(--color-surface); border: 1px solid var(--color-divider);
@@ -155,28 +177,46 @@ summary::marker { color: var(--color-accent); }
   font-variant-numeric: tabular-nums;
 }
 
-.gen-chips { display: flex; gap: 6px; overflow-x: auto; }
+/* The generation index reads as numerals in a contents page, not buttons. */
+.gen-chips { display: flex; gap: 2px; overflow-x: auto; margin-left: auto; }
 .gen-chip {
-  height: 42px; min-width: 46px; padding: 0 12px;
-  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
-  background: var(--color-bg); cursor: pointer;
-  font-family: var(--font-heading); font-weight: 600; font-size: 15px;
-  color: var(--color-neutral-800); white-space: nowrap;
+  height: 44px; min-width: 36px; padding: 0 9px;
+  border: 0; border-bottom: 2px solid transparent; background: none; cursor: pointer;
+  font-family: var(--font-heading); font-weight: 600; font-size: 16px;
+  color: var(--color-neutral-600); white-space: nowrap;
 }
-.gen-chip:hover { border-color: var(--color-accent); color: var(--color-accent-700); }
-.zoom-controls { display: flex; gap: 6px; margin-left: auto; }
-.zoom-controls .btn { height: 42px; }
-.zoom-controls .btn-icon { width: 42px; }
+.gen-chip:hover { color: var(--color-accent-700); border-bottom-color: var(--color-accent); }
 
-/* ── tree canvas ────────────────────────────────────────────────────────── */
+/* ── tree canvas ────────────────────────────────────────────────────────────
+   Full-bleed, delimited by hairlines like a plate in a book — not a widget in
+   a grey box. The fades at either edge hint that the scene continues. */
+.wrap-canvas { max-width: none; padding: 22px 0 36px; }
 .viewport {
   position: relative; overflow: hidden;
   height: clamp(480px, 72vh, 860px);
-  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
-  background: var(--color-neutral-100);
+  height: clamp(480px, 72svh, 860px);
+  border-block: 1px solid var(--color-divider);
   touch-action: none; cursor: grab; user-select: none;
 }
 .viewport.is-panning { cursor: grabbing; }
+.viewport::before,
+.viewport::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 44px;
+  z-index: 2; pointer-events: none;
+}
+.viewport::before { left: 0; background: linear-gradient(to right, var(--color-bg), transparent); }
+.viewport::after { right: 0; background: linear-gradient(to left, var(--color-bg), transparent); }
+
+/* Zoom controls live on the canvas, like a map's. */
+.zoom-controls {
+  position: absolute; right: 12px; bottom: 12px; z-index: 4;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.zoom-controls .btn-icon {
+  width: 42px; height: 42px;
+  background: color-mix(in srgb, var(--color-bg) 90%, transparent);
+  backdrop-filter: blur(6px);
+}
 .scene { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
 .scene svg { position: absolute; left: 0; top: 0; pointer-events: none; }
 .link-path { fill: none; stroke: var(--color-neutral-400); stroke-width: 1.2px; }
@@ -219,15 +259,40 @@ summary::marker { color: var(--color-accent); }
 .node.is-flash { animation: lutaFlash 2.4s ease-out; }
 
 .canvas-hint {
-  position: absolute; left: 12px; bottom: 10px; pointer-events: none;
+  position: absolute; left: 16px; bottom: 14px; pointer-events: none; z-index: 3;
   font-size: 11px; color: var(--color-neutral-600);
   background: color-mix(in srgb, var(--color-bg) 88%, transparent);
   padding: 4px 9px; border-radius: var(--radius-sm);
 }
 
 /* ── person dialog ──────────────────────────────────────────────────────── */
-.dialog-backdrop { z-index: 60; }
-.person-dialog { width: min(580px, 100%); max-height: 88vh; overflow: auto; gap: 14px; }
+@keyframes dlgFade { from { opacity: 0; } }
+@keyframes dlgRise { from { opacity: 0; transform: translateY(10px); } }
+@keyframes dlgSheet { from { transform: translateY(40px); opacity: 0.4; } }
+
+.dialog-backdrop { z-index: 60; animation: dlgFade 0.18s ease-out; }
+.person-dialog {
+  width: min(580px, 100%); max-height: 88vh; overflow: auto; gap: 14px;
+  animation: dlgRise 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* On a phone the dialog is a bottom sheet — reachable with a thumb, and the
+   safe-area padding keeps the close button above the home indicator. */
+@media (max-width: 640px) {
+  .dialog-backdrop { padding: 0; place-items: end stretch; }
+  .person-dialog {
+    width: 100%; max-width: none;
+    max-height: 92vh; max-height: 92dvh;
+    border-radius: 16px 16px 0 0; border-bottom: 0;
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+    animation: dlgSheet 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .person-dialog::before {
+    content: ''; width: 36px; height: 4px; flex: none;
+    margin: -6px auto 0; border-radius: 2px;
+    background: var(--color-neutral-300);
+  }
+}
 .person-head { display: flex; gap: 16px; align-items: center; }
 .person-photo, .person-initials {
   width: 84px; height: 84px; flex: none; border-radius: 50%;
@@ -293,8 +358,8 @@ summary::marker { color: var(--color-accent); }
 .suggest { border-top: 1px solid var(--color-divider); padding-top: 12px; }
 .suggest-head { display: flex; align-items: center; gap: 8px; }
 .suggest-head .btn { margin-left: auto; font-size: 12.5px; padding: 3px 8px; }
-.suggest-list { display: flex; flex-direction: column; gap: 7px; margin-top: 8px; }
-.suggest-item { border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 9px 12px; }
+.suggest-list { display: flex; flex-direction: column; margin-top: 4px; }
+.suggest-item { border-top: 1px solid var(--color-divider); padding: 10px 2px; }
 .suggest-meta { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .suggest-who {
   font-size: 12.5px; color: var(--color-accent-700);
@@ -314,14 +379,17 @@ summary::marker { color: var(--color-accent); }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
 /* ── map drawer ─────────────────────────────────────────────────────────── */
+@keyframes drawerIn { from { transform: translateX(32px); opacity: 0.4; } }
 .map-backdrop {
   position: fixed; inset: 0; z-index: 70;
   background: color-mix(in srgb, var(--color-neutral-900) 45%, transparent);
+  animation: dlgFade 0.18s ease-out;
 }
 .map-drawer {
   position: absolute; top: 0; right: 0; bottom: 0; width: min(720px, 100vw);
   background: var(--color-bg); border-left: 1px solid var(--color-divider);
   box-shadow: var(--shadow-lg); display: flex; flex-direction: column;
+  animation: drawerIn 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .map-head {
   display: flex; align-items: center; gap: 12px;
@@ -350,11 +418,30 @@ summary::marker { color: var(--color-accent); }
   .nav-note { display: none; }
   .nav { gap: var(--space-3); padding: var(--space-3); }
   .hero { padding: 48px 20px 32px; }
-  .chapter { gap: 12px; }
+
+  /* Stats become 2×2: the strip's own hairlines carry on, the vertical rule
+     only between columns, one horizontal rule between the rows. */
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat { padding: 18px 8px; }
+  .stat:nth-child(3)::before { content: none; }
+  .stat:nth-child(n + 3) { border-top: 1px solid var(--color-divider); }
+  .stat-n { font-size: 30px; }
+
+  .chapter { gap: 12px; flex-wrap: wrap; }
   .chapter .btn { margin-left: 0; }
   .chapter-num { font-size: 40px; }
   .prose { text-align: left; hyphens: none; }
-  .toolbar-inner { padding: 10px 16px; }
-  .zoom-controls { margin-left: 0; }
-  .search { max-width: none; }
+
+  .toolbar-inner { padding: 6px 16px; gap: 4px; }
+  .search { max-width: none; flex-basis: 100%; }
+  .gen-chips { margin-left: 0; width: 100%; }
+  .gen-chip { flex: 1; }
+
+  .wrap-canvas { padding-top: 14px; }
+  .viewport {
+    height: clamp(420px, 68vh, 760px);
+    height: clamp(420px, 68svh, 760px);
+  }
+  .viewport::before, .viewport::after { width: 20px; }
+  .canvas-hint { display: none; }
 }

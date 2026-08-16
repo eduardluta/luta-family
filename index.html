@@ -2,7 +2,7 @@
 <html lang="sq">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Familja Luta — Trungu familjar nga Peja, prej vitit 1700</title>
 <meta name="description" content="Nëntë gjenerata të familjes Luta nga Peja, nga viti 1700 deri më sot — sipas historiatit familjar të shkruar nga Xhafer (Lutfulla) Luta. Trungu familjar, historiati dhe harta e pronave.">
 <link rel="canonical" href="https://eduardluta.github.io/luta-family/">
@@ -153,16 +153,12 @@
   <div class="toolbar">
     <div class="toolbar-inner">
       <div class="search">
-        <input class="input" type="search" id="search" placeholder="Kërko një emër…" aria-label="Kërko një emër"
+        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input class="input" type="search" id="search" placeholder="Kërko një emër…" aria-label="Kërko një emër" enterkeyhint="search"
                role="combobox" aria-expanded="false" aria-controls="search-results" aria-autocomplete="list" autocomplete="off">
         <div class="search-results" id="search-results" role="listbox" aria-label="Rezultatet e kërkimit" hidden></div>
       </div>
       <div class="gen-chips" id="gen-chips" role="group" aria-label="Shko te një gjeneratë"></div>
-      <div class="zoom-controls">
-        <button type="button" class="btn btn-secondary btn-icon" id="zoom-out" title="Zvogëlo" aria-label="Zvogëlo" style="font-size:20px">−</button>
-        <button type="button" class="btn btn-secondary btn-icon" id="zoom-in" title="Zmadho" aria-label="Zmadho" style="font-size:18px">+</button>
-        <button type="button" class="btn btn-secondary" id="zoom-fit" style="font-size:13px">Pamja e plotë</button>
-      </div>
     </div>
   </div>
 
@@ -170,7 +166,18 @@
     <div class="viewport" id="viewport" tabindex="0" role="application"
          aria-label="Trungu familjar — tërhiq për të lëvizur, rrotë ose pinch për zmadhim, shigjetat për lëvizje">
       <div class="scene" id="scene"></div>
-      <div class="canvas-hint">Tërhiq për të lëvizur · rrotë / pinch për zmadhim · kliko personin</div>
+      <div class="canvas-hint">Tërhiq për të lëvizur · kliko personin</div>
+      <div class="zoom-controls">
+        <button type="button" class="btn btn-secondary btn-icon" id="zoom-in" title="Zmadho" aria-label="Zmadho">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button type="button" class="btn btn-secondary btn-icon" id="zoom-out" title="Zvogëlo" aria-label="Zvogëlo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>
+        </button>
+        <button type="button" class="btn btn-secondary btn-icon" id="zoom-fit" title="Pamja e plotë" aria-label="Pamja e plotë">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 </section>

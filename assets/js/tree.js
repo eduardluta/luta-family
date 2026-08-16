@@ -102,6 +102,11 @@ export class TreeCanvas {
     this.framed = false;
     this.lastSize = null;
 
+    // Programmatic moves (search jump, generation chip, focus) glide; direct
+    // manipulation (drag, wheel, pinch) must never lag behind the finger.
+    this.reduceMotion =
+      typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     this.#render();
     this.#bind();
     this.#watchSize();
@@ -255,10 +260,22 @@ export class TreeCanvas {
     this.scene.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
   }
 
+  /** Ease the next transform change, or cut any glide short for direct input. */
+  #glide(on) {
+    clearTimeout(this._glideTimer);
+    if (on && !this.reduceMotion) {
+      this.scene.style.transition = 'transform 480ms cubic-bezier(0.22, 1, 0.36, 1)';
+      this._glideTimer = setTimeout(() => { this.scene.style.transition = ''; }, 500);
+    } else {
+      this.scene.style.transition = '';
+    }
+  }
+
   /** Centre a scene-space point in the viewport at the given scale. */
-  centreOn(sceneX, sceneY, scale) {
+  centreOn(sceneX, sceneY, scale, { animate = false } = {}) {
     const r = this.#box();
     if (!r) return; // unmeasurable; #ensureFramed will retry once it has a size
+    this.#glide(animate && this.framed);
     this.view.scale = scale;
     this.view.x = r.width / 2 - sceneX * scale;
     this.view.y = r.height / 2 - sceneY * scale;
@@ -270,6 +287,7 @@ export class TreeCanvas {
     this.#ensureFramed();
     const r = this.#box();
     if (!r) return;
+    this.#glide(false);
     const px = clientX - r.left;
     const py = clientY - r.top;
     const v = this.view;
@@ -296,7 +314,7 @@ export class TreeCanvas {
       MIN_SCALE,
       Math.min(r.width / this.layout.width, r.height / this.layout.height) * 0.94
     );
-    this.centreOn(this.layout.width / 2, this.layout.height / 2, scale);
+    this.centreOn(this.layout.width / 2, this.layout.height / 2, scale, { animate: true });
   }
 
   /** Opening view — the root, with room below it for the branches. */
@@ -311,7 +329,7 @@ export class TreeCanvas {
     if (!person) return;
     this.#ensureFramed();
     const p = this.layout.at(person);
-    this.centreOn(p.x, p.y + 55, scale ?? Math.max(this.view.scale, 0.9));
+    this.centreOn(p.x, p.y + 55, scale ?? Math.max(this.view.scale, 0.9), { animate: true });
   }
 
   focusGeneration(gen) {
@@ -320,7 +338,7 @@ export class TreeCanvas {
     if (!members.length) return;
     const middle = members[Math.floor(members.length / 2)];
     const p = this.layout.at(middle);
-    this.centreOn(p.x, p.y + 55, Math.max(0.5, this.view.scale));
+    this.centreOn(p.x, p.y + 55, Math.max(0.5, this.view.scale), { animate: true });
   }
 
   /** Briefly highlight a person after a search jump. */
@@ -352,6 +370,8 @@ export class TreeCanvas {
       // Last line of defence: if nothing else framed the view, do it now —
       // before the drag maths starts from a nonsense transform.
       this.#ensureFramed();
+      // Grabbing the canvas cuts any glide short — the finger owns the view.
+      this.#glide(false);
       this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       this.suppressClick = false;
       if (this.pointers.size === 1) {

@@ -3,6 +3,7 @@
 # Deploy (see ../docs/DEPLOY.md for the full walkthrough):
 #   npx wrangler d1 create luta-family        # paste the returned id below
 #   npx wrangler d1 execute luta-family --remote --file=./schema.sql
+#   npx wrangler kv namespace create IMAGES   # paste the returned id below
 #   npx wrangler secret put ADMIN_TOKEN       # a long random string
 #   npx wrangler secret put IP_SALT           # any long random string
 #   npx wrangler deploy
@@ -20,6 +21,13 @@ ALLOWED_ORIGINS = "https://luta.family,https://www.luta.family,http://localhost:
 binding = "DB"
 database_name = "luta-family"
 database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+# Photographs attached to suggestions. KV rather than R2 deliberately: R2 asks
+# for a payment method even on its free tier, KV does not, and a family archive
+# will never approach KV's free limits (1 GB, 1,000 writes/day).
+[[kv_namespaces]]
+binding = "IMAGES"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 
 # ADMIN_TOKEN and IP_SALT are secrets, never vars — set them with
 # `wrangler secret put`, so they stay out of this file and out of git.

@@ -3,6 +3,10 @@
 -- Apply with:
 --   npx wrangler d1 execute luta-family --remote --file=./schema.sql
 --
+-- Safe to re-run: every statement is IF NOT EXISTS, and the ALTER at the bottom
+-- is wrapped so an existing database picks up the images column without losing
+-- anything.
+--
 -- Nothing here is the archive. The archive is data/family.js in the repo; this
 -- table only holds proposals until an admin folds the good ones into that file.
 -- If this database is ever lost, the site is unaffected.
@@ -12,6 +16,8 @@ CREATE TABLE IF NOT EXISTS suggestions (
   person_id   TEXT NOT NULL,
   author      TEXT NOT NULL DEFAULT '',
   text        TEXT NOT NULL,
+  -- JSON array of KV keys for attached photographs, e.g. ["img/ab12.jpg"]
+  images      TEXT NOT NULL DEFAULT '[]',
   -- pending → approved (shows on the site) | rejected (kept, not shown)
   status      TEXT NOT NULL DEFAULT 'pending'
               CHECK (status IN ('pending', 'approved', 'rejected')),

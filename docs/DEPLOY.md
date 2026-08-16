@@ -83,6 +83,23 @@ Copy the `database_id` it prints into `api/wrangler.toml`, replacing
 npx wrangler d1 execute luta-family --remote --file=./schema.sql
 ```
 
+### Create the photo store
+
+Suggestions can carry photographs — someone scans an old picture and sends it
+in. Those live in a KV namespace:
+
+```bash
+npx wrangler kv namespace create IMAGES
+```
+
+Copy the `id` it prints into `api/wrangler.toml`, replacing
+`REPLACE_WITH_YOUR_KV_NAMESPACE_ID`.
+
+> KV rather than R2 on purpose: R2 asks for a payment method even on its free
+> tier, KV does not. A family archive will not come near KV's free limits
+> (1 GB stored, 1,000 writes a day) — every photo is downscaled to 1600px in the
+> browser before upload, so they land around 100–300 KB each.
+
 ### Set the secrets
 
 ```bash
@@ -147,9 +164,14 @@ Approving a suggestion publishes that note under the person. It does **not**
 change the archive: to actually fix a date or a name, edit `data/family.js` and
 push.
 
+Photographs attached to a suggestion appear as thumbnails in the queue; click one
+to open it full size before deciding. Deleting a suggestion also deletes its
+photographs from KV.
+
 Built-in abuse protection: a hidden honeypot field, a cap of 8 submissions per IP
-per hour, length limits, and a strict origin allowlist. Submissions are never
-visible until approved, so the worst a spammer achieves is a queue you delete.
+per hour, at most 6 images of 3 MB each, an allowlist of image types, length
+limits, and a strict origin allowlist. Submissions are never visible until
+approved, so the worst a spammer achieves is a queue you delete.
 
 ---
 

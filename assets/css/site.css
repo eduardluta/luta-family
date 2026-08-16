@@ -262,10 +262,6 @@ summary::marker { color: var(--color-accent); }
   display: block; font-size: 10.5px; color: var(--color-neutral-600);
   font-variant-numeric: tabular-nums; margin-top: 2px;
 }
-.node-spouse {
-  display: block; font-size: 10px; color: var(--color-neutral-600);
-  margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
 
 @keyframes lutaFlash { 0%, 65% { background: var(--color-accent-200); } 100% { background: transparent; } }
 .node.is-flash { animation: lutaFlash 2.4s ease-out; }

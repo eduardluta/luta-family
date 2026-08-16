@@ -20,7 +20,7 @@ const LEVEL_H = 200;  // vertical pitch of one generation
 const PAD_X = 190;    // gutter left of the first column, clear of the roman numerals
 const PAD_TOP = 130;
 const NODE_W = 148;
-const NODE_H = 116;   // where a connector leaves the bottom of a node
+const NODE_H = 104;   // where a connector leaves the bottom of a node
 
 const MIN_SCALE = 0.05;
 const MAX_SCALE = 1.8;
@@ -207,7 +207,11 @@ export class TreeCanvas {
       const label = treeLabel(person);
       const partners = person.partners || [];
       const spouseGivens = partners.map((q) => q.name.split(/\s+/)[0]);
-      btn.title = years ? `${person.name} · ${years}` : person.name;
+      // The spouse is shown only as a portrait — the name lives in the tooltip
+      // and the accessible label, and in full in the person dialog.
+      btn.title =
+        [person.name, years, spouseGivens.length ? `me ${spouseGivens.join(' dhe ')}` : '']
+          .filter(Boolean).join(' · ');
       btn.setAttribute(
         'aria-label',
         `${person.name}${years ? `, ${years}` : ''}` +
@@ -278,12 +282,6 @@ export class TreeCanvas {
         y2.className = 'node-years';
         y2.textContent = years;
         text.append(y2);
-      }
-      if (spouseGivens.length) {
-        const sp = document.createElement('span');
-        sp.className = 'node-spouse';
-        sp.textContent = `& ${spouseGivens.join(' & ')}`;
-        text.append(sp);
       }
       btn.append(text);
 

@@ -17,10 +17,42 @@
     border: 1px solid var(--color-divider); border-radius: var(--radius-md);
     box-shadow: var(--shadow-md); padding: 14px 16px;
   }
-  .luta-panel h1 { font-size: 19px; margin: 0 0 2px; }
+  .luta-panel > summary {
+    cursor: pointer; list-style: none; margin: -14px -16px 0; padding: 14px 16px;
+  }
+  .luta-panel > summary::-webkit-details-marker { display: none; }
+  .luta-panel h1 { font-size: 19px; margin: 0 0 2px; display: inline-block; }
   .luta-panel .sub {
     font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
     color: var(--color-neutral-600); margin-bottom: 10px;
+  }
+  .luta-panel[open] > summary { margin-bottom: 0; }
+  /* A caret so the summary reads as something you can open. */
+  .luta-panel > summary::after {
+    content: ''; float: right; margin-top: 7px;
+    width: 8px; height: 8px; rotate: 45deg;
+    border-right: 1.5px solid var(--color-neutral-600);
+    border-bottom: 1.5px solid var(--color-neutral-600);
+    transition: rotate 0.2s ease;
+  }
+  .luta-panel[open] > summary::after { rotate: 225deg; margin-top: 10px; }
+
+  /* On a phone a 300px panel simply covers the map. Collapse it to its title
+     and sit it at the bottom, where a thumb reaches it. */
+  @media (max-width: 640px) {
+    .luta-panel {
+      /* Clear of the OpenStreetMap attribution — crediting the tiles is a
+         licence condition, so the panel must never sit on top of it. */
+      top: auto; bottom: 24px; left: 10px; right: 10px;
+      width: auto; max-height: 56%;
+      padding: 10px 12px;
+    }
+    .luta-panel > summary { margin: -10px -12px 0; padding: 10px 12px; }
+    .luta-panel h1 { font-size: 16px; }
+    .luta-panel .sub { margin-bottom: 0; }
+    .luta-panel[open] .sub { margin-bottom: 8px; }
+    .luta-place { padding: 11px 2px; }
+    .luta-note { font-size: 10.5px; }
   }
   .luta-place {
     display: flex; gap: 10px; align-items: baseline; width: 100%; text-align: left;
@@ -49,12 +81,14 @@
 </head>
 <body>
 <div id="map"></div>
-<div class="luta-panel">
-  <h1>Pronat e familjes Luta</h1>
-  <div class="sub">Sipas tapive · deri më 1936</div>
+<details class="luta-panel" id="luta-panel">
+  <summary>
+    <h1>Pronat e familjes Luta</h1>
+    <div class="sub">Sipas tapive · deri më 1936</div>
+  </summary>
   <div id="places"></div>
   <div class="luta-note">Shenjat tregojnë qendrat e fshatrave ku shtriheshin pronat — jo kufijtë e saktë të parcelave (regjistri kadastral i vitit 1936 nuk ka koordinata). Rrethi i artë tregon madhësinë e sipërfaqes. Vendet me <em>≈</em> janë të përafërta — dërgoni saktësime përmes sugjerimeve në trung. Zmadho me + / −, me Ctrl + rrotë, ose me dy gishta.</div>
-</div>
+</details>
 
 <script src="assets/vendor/leaflet/leaflet.js"></script>
 <script>
@@ -75,6 +109,10 @@ var PLACES = [
 ];
 
 var GOLD = '#b68235';
+
+// Open on anything roomy enough to show the list without hiding the map.
+var panel = document.getElementById('luta-panel');
+if (window.matchMedia('(min-width: 641px)').matches) panel.open = true;
 
 /**
  * The map is embedded in the middle of the article, so it must not trap the

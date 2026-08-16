@@ -296,23 +296,35 @@ summary::marker { color: var(--color-accent); }
 }
 
 /* On a phone the dialog is a bottom sheet — reachable with a thumb, and the
-   safe-area padding keeps the close button above the home indicator. */
+   safe-area padding keeps the close button above the home indicator.
+   It stops well short of the top: a record can run to several screens, and a
+   sheet that fills the whole display reads as a page you navigated to rather
+   than something covering the tree you can dismiss. */
 @media (max-width: 640px) {
   .dialog-backdrop { padding: 0; place-items: end stretch; }
   .person-dialog {
     width: 100%; max-width: none;
-    max-height: 92vh; max-height: 92dvh;
+    max-height: 80vh; max-height: 80dvh;
     border-radius: 16px 16px 0 0; border-bottom: 0;
-    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+    gap: 12px;
+    padding: var(--space-3) var(--space-3)
+             calc(var(--space-3) + env(safe-area-inset-bottom));
     animation: dlgSheet 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .person-dialog::before {
-    content: ''; width: 36px; height: 4px; flex: none;
-    margin: -6px auto 0; border-radius: 2px;
-    background: var(--color-neutral-300);
-  }
+  /* The drag handle is drawn inside the sticky header instead of as a separate
+     row, so it cannot scroll away and leave a gap for text to show through.
+     The rest of the sheet's mobile treatment lives in the media block at the
+     end of this file — it has to come after the .person-head/.person-photo
+     rules below, or those win on source order at equal specificity. */
 }
 .person-head { display: flex; gap: 16px; align-items: center; }
+.dialog-close {
+  margin-left: auto; align-self: flex-start; flex: none;
+  background: none; border: 0; cursor: pointer; padding: 0 2px;
+  font-family: var(--font-body); font-size: 26px; line-height: 1;
+  color: var(--color-neutral-600);
+}
+.dialog-close:hover { color: var(--color-accent-700); }
 .person-photo, .person-initials {
   width: 84px; height: 84px; flex: none; border-radius: 50%;
   border: 2px solid var(--color-accent-400);
@@ -458,4 +470,41 @@ summary::marker { color: var(--color-accent); }
     height: clamp(340px, 52vh, 520px);
     height: clamp(340px, 52svh, 520px);
   }
+
+  /* ── the person sheet on a phone ──
+     Whose record this is, and the way out of it, stay put while a biography
+     that can run several screens long scrolls underneath. */
+  /* Pinned to the top of the scrollport. The negative margins pull it out to
+     the sheet's edges so its opaque background covers the full width and the
+     padding strip above — otherwise the scrolling biography shows through
+     around it. */
+  .person-head {
+    /* A sticky offset of 0 pins below the scroll container's padding, leaving a
+       strip the biography scrolls through. Pulling the offset up by that same
+       padding lands the header flush against the top of the sheet. */
+    position: sticky; top: calc(-1 * var(--space-3)); z-index: 4;
+    gap: 12px;
+    margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) 0;
+    padding: 18px var(--space-3) 10px;
+    background: var(--color-surface);
+    box-shadow: 0 1px 0 var(--color-divider);
+  }
+  /* The grab handle, drawn inside the header so it never scrolls away. */
+  .person-head::after {
+    content: ''; position: absolute; top: 6px; left: 50%; translate: -50% 0;
+    width: 36px; height: 4px; border-radius: 2px;
+    background: var(--color-neutral-300);
+  }
+  .person-photo, .person-initials { width: 56px; height: 56px; }
+  .person-initials { font-size: 20px; }
+  .person-head .dialog-title { font-size: 20px; }
+  .person-years { font-size: 12.5px; margin-top: 2px; }
+  .person-tags { margin-top: 6px; }
+  .dialog-close { font-size: 30px; padding: 0 4px; }
+
+  .facts { gap: 11px 16px; padding-top: 12px; }
+  .bio-text { font-size: 14px; text-align: left; }
+  .lineage { line-height: 1.8; }
+  /* The trailing "Mbyll" is redundant once the header carries an ×. */
+  .person-dialog .dialog-actions { display: none; }
 }

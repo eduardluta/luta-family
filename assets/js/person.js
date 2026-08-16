@@ -99,6 +99,15 @@ export function renderPerson(person, onNavigate) {
   if (branch) tags.append(el('span', 'tag tag-neutral', branch));
   headText.append(tags);
   head.append(headText);
+
+  // A record can run to several screens of biography. Without a close control
+  // in the header, the only way out on a phone is to scroll to the very bottom.
+  const closeX = el('button', 'dialog-close', '×');
+  closeX.type = 'button';
+  closeX.dataset.close = 'true';
+  closeX.setAttribute('aria-label', 'Mbyll');
+  head.append(closeX);
+
   dialog.append(head);
 
   /* ── facts ── */

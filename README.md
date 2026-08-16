@@ -3,12 +3,7 @@
 A digital archive of the Luta family of Pejë: nine generations from 1700 to the
 present, built from the family history written by **Xhafer (Lutfulla) Luta**.
 
-Live at **<https://eduardluta.github.io/luta-family/>**.
-
-> The `luta.family` domain is not registered yet. When it is, move
-> `docs/CNAME.luta.family` to `CNAME` in the repo root and follow
-> [`docs/DEPLOY.md`](docs/DEPLOY.md) — the canonical URL in `index.html` and
-> `SITE_URL` in `assets/js/config.js` need the same change.
+Live at **[luta.family](https://luta.family)**.
 
 The site has three parts: the **historiati** (the written history, in the
 original Albanian), the **trungu** (an interactive tree of 150 people), and a

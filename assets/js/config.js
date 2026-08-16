@@ -15,4 +15,4 @@ export const API_BASE = '';
 export const CONTACT_EMAIL = 'eduard@dua.com';
 
 /** Shown in the page footer and used for share links. */
-export const SITE_URL = 'https://eduardluta.github.io/luta-family/';
+export const SITE_URL = 'https://luta.family';

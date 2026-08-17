@@ -25,7 +25,7 @@
  * waitUntil, so a mail failure can never lose a suggestion.
  */
 
-import { EmailMessage } from 'cloudflare:email';
+import { notify } from './notify.js';
 
 const MAX_TEXT = 2000;
 const MAX_AUTHOR = 80;
@@ -107,61 +107,6 @@ async function dropImages(env, keys) {
   await Promise.allSettled(keys.map((k) => env.IMAGES.delete(k)));
 }
 
-/* ── notification mail ──────────────────────────────────────────────────── */
-
-/** UTF-8 safe base64, chunked so a long body cannot blow the call stack. */
-function b64(text) {
-  const bytes = new TextEncoder().encode(text);
-  let binary = '';
-  for (let i = 0; i < bytes.length; i += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  }
-  return btoa(binary);
-}
-
-/**
- * Tells the keeper a suggestion is waiting.
- *
- * Every piece of submitted text goes in the body, never in a header: a newline
- * in an author's name would otherwise let a stranger inject mail headers. The
- * headers here are entirely of our own making.
- */
-async function notify(env, { personId, author, text, imageCount }) {
-  if (!env.NOTIFY || !env.NOTIFY_FROM || !env.NOTIFY_TO) return;
-
-  const site = env.SITE_URL || 'https://luta.family';
-  const body = [
-    'Një sugjerim i ri pret shqyrtim.',
-    '',
-    `Personi:    ${personId}`,
-    `            ${site}/#/person/${personId}`,
-    `Nga:        ${author || 'Anonim'}`,
-    `Fotografi:  ${imageCount}`,
-    '',
-    '— — —',
-    text || '(pa tekst — vetëm fotografi)',
-    '— — —',
-    '',
-    `Shqyrtoje këtu: ${site}/admin.html`,
-    '',
-    'Sugjerimi nuk shfaqet në faqe derisa ta miratosh.',
-  ].join('\r\n');
-
-  const raw = [
-    `From: Familja Luta <${env.NOTIFY_FROM}>`,
-    `To: <${env.NOTIFY_TO}>`,
-    'Subject: =?UTF-8?B?' + b64('Sugjerim i ri — Familja Luta') + '?=',
-    `Message-ID: <${crypto.randomUUID()}@luta.family>`,
-    `Date: ${new Date().toUTCString()}`,
-    'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: base64',
-    '',
-    b64(body),
-  ].join('\r\n');
-
-  await env.NOTIFY.send(new EmailMessage(env.NOTIFY_FROM, env.NOTIFY_TO, raw));
-}
 
 export default {
   async fetch(request, env, ctx) {
@@ -261,14 +206,17 @@ export default {
 
         // Store the photographs first: a suggestion row pointing at blobs that
         // failed to write would show broken images in the review queue.
+        // The bytes are kept so the notification can carry the pictures without
+        // reading them back out of KV.
         const keys = [];
+        const stored = [];
         try {
           for (const file of files) {
             const key = `img/${crypto.randomUUID()}.${ALLOWED_TYPES[file.type]}`;
-            await env.IMAGES.put(key, await file.arrayBuffer(), {
-              metadata: { contentType: file.type },
-            });
+            const bytes = await file.arrayBuffer();
+            await env.IMAGES.put(key, bytes, { metadata: { contentType: file.type } });
             keys.push(key);
+            stored.push({ key, type: file.type, bytes });
           }
         } catch (err) {
           await dropImages(env, keys);
@@ -276,13 +224,14 @@ export default {
           return json({ error: 'image_store_failed' }, 502, origin);
         }
 
+        const createdAt = new Date().toISOString();
         try {
           await env.DB.prepare(
             `INSERT INTO suggestions (id, person_id, author, text, images, status, created_at, ip_hash)
              VALUES (?, ?, ?, ?, ?, 'pending', ?, ?)`
           ).bind(
             crypto.randomUUID(), personId, author, text,
-            JSON.stringify(keys), new Date().toISOString(), ipHash
+            JSON.stringify(keys), createdAt, ipHash
           ).run();
         } catch (err) {
           await dropImages(env, keys); // don't leave orphans behind
@@ -293,7 +242,7 @@ export default {
         // already safely stored, and a bounced notification must not turn a
         // successful submission into a failure the sender sees.
         ctx.waitUntil(
-          notify(env, { personId, author, text, imageCount: keys.length })
+          notify(env, { personId, author, text, createdAt, images: stored })
             .catch((err) => console.error('notify', err))
         );
 

@@ -49,11 +49,13 @@
     Miratimi <strong>nuk</strong> e ndryshon vetë arkivin — korrigjimet e sakta bëhen në
     <code>data/family.js</code>.</p>
 
-  <!-- Sign-in. The token only ever lives in sessionStorage: closing the tab ends it. -->
+  <!-- Sign-in. Once per device: the key is kept in localStorage and the page
+       opens straight into the queue from then on. -->
   <form class="gate" id="gate">
-    <label class="field" for="token" style="font-size:12px">Fjalëkalimi i administratorit</label>
+    <label class="field" for="token" style="font-size:12px">Çelësi i administratorit</label>
     <input class="input" type="password" id="token" autocomplete="current-password" required>
-    <button class="btn btn-primary" type="submit" style="align-self:flex-start">Hyr</button>
+    <button class="btn btn-primary" type="submit" style="align-self:flex-start">Kyç këtë pajisje</button>
+    <p class="note" style="margin-top:2px">Kërkohet vetëm një herë për këtë pajisje.</p>
     <p class="msg" id="gate-msg" role="status"></p>
   </form>
 
@@ -64,7 +66,7 @@
       <button type="button" class="btn btn-secondary filter" data-status="rejected">Të refuzuara</button>
       <button type="button" class="btn btn-secondary filter" data-status="all">Të gjitha</button>
       <span class="count" id="count"></span>
-      <button type="button" class="btn btn-ghost" id="signout">Dil</button>
+      <button type="button" class="btn btn-ghost" id="signout" title="Harron çelësin në këtë pajisje">Shkyç pajisjen</button>
     </div>
     <div class="queue" id="queue"></div>
     <p class="msg" id="msg" role="status"></p>
@@ -78,8 +80,33 @@ import { imageUrl } from './assets/js/suggestions.js';
 
 const $ = (s) => document.querySelector(s);
 const KEY = 'luta-admin-token';
-let token = sessionStorage.getItem(KEY) || '';
 let status = 'pending';
+
+/**
+ * The key is remembered per device, not per tab: this page is opened to glance
+ * at a queue, and being asked for a password every time is how a queue stops
+ * getting read. Signing out clears it.
+ *
+ * A device can also be authorised by opening admin.html#key=… once — the key is
+ * stored and stripped from the address bar immediately, so it does not sit in
+ * the URL, get bookmarked, or end up in a screenshot.
+ */
+function readKeyFromUrl() {
+  const match = /[#&]key=([^&]+)/.exec(window.location.hash);
+  if (!match) return '';
+  const value = decodeURIComponent(match[1]);
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+  return value;
+}
+
+let token = '';
+try {
+  const fromUrl = readKeyFromUrl();
+  if (fromUrl) localStorage.setItem(KEY, fromUrl);
+  token = localStorage.getItem(KEY) || '';
+} catch {
+  token = ''; // private browsing — fall back to typing it
+}
 
 const api = (path, options = {}) =>
   fetch(`${API_BASE}${path}`, {
@@ -105,7 +132,7 @@ async function load() {
   let body;
   try {
     const res = await api(`/api/admin/suggestions?status=${status}`);
-    if (res.status === 401) { signOut('Fjalëkalim i gabuar.'); return; }
+    if (res.status === 401) { signOut('Çelësi nuk pranohet — provo përsëri.'); return; }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     body = await res.json();
   } catch (err) {
@@ -239,9 +266,10 @@ function signIn() {
 
 function signOut(message) {
   token = '';
-  sessionStorage.removeItem(KEY);
+  try { localStorage.removeItem(KEY); } catch { /* private browsing */ }
   $('#gate').hidden = false;
   $('#panel').hidden = true;
+  $('#token').value = '';
   if (message) say($('#gate-msg'), message, true);
 }
 
@@ -249,7 +277,7 @@ $('#gate').addEventListener('submit', (e) => {
   e.preventDefault();
   token = $('#token').value.trim();
   if (!token) return;
-  sessionStorage.setItem(KEY, token);
+  try { localStorage.setItem(KEY, token); } catch { /* private browsing */ }
   say($('#gate-msg'), '');
   signIn();
 });

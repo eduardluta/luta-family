@@ -9,7 +9,7 @@
  * replaced by an email link. The archive itself never depends on it.
  */
 
-export const API_BASE = '';
+export const API_BASE = 'https://api.luta.family';
 
 /** Where a suggestion goes when there is no API — and the fallback if one fails. */
 export const CONTACT_EMAIL = 'eduard@dua.com';

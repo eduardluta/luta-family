@@ -20,19 +20,20 @@ ALLOWED_ORIGINS = "https://luta.family,https://www.luta.family,http://localhost:
 [[d1_databases]]
 binding = "DB"
 database_name = "luta-family"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "f3e8bad5-e4ba-46d5-832e-18a3f31161f7"
 
 # Photographs attached to suggestions. KV rather than R2 deliberately: R2 asks
 # for a payment method even on its free tier, KV does not, and a family archive
 # will never approach KV's free limits (1 GB, 1,000 writes/day).
 [[kv_namespaces]]
 binding = "IMAGES"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = "e640ff243e5a446fb22028c6e9c7b771"
 
 # ADMIN_TOKEN and IP_SALT are secrets, never vars — set them with
 # `wrangler secret put`, so they stay out of this file and out of git.
 
-# Serve it at api.luta.family (see DEPLOY.md for the DNS record):
-# [[routes]]
-# pattern = "api.luta.family"
-# custom_domain = true
+# Served at api.luta.family. Cloudflare creates and manages the DNS record for a
+# custom domain itself — do not add one by hand in the DNS tab.
+[[routes]]
+pattern = "api.luta.family"
+custom_domain = true

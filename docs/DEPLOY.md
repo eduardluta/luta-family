@@ -116,6 +116,29 @@ openssl rand -base64 32
 Neither is ever written to a file in this repo. `ADMIN_TOKEN` is the only thing
 protecting the moderation queue — treat it like a password, because it is one.
 
+### Turn on the notification email
+
+A queue nobody is told about is a queue nobody reads, so each new suggestion
+emails the archive's keeper. This uses Cloudflare Email Routing rather than a
+third-party sender — no API key to hold, no extra account, free.
+
+1. Open **Email Routing** for the zone and add the keeper's address under
+   **Destination Addresses**. Cloudflare emails a verification link; click it.
+   The address must show **Verified**.
+2. Set `NOTIFY_TO` (that address) and `NOTIFY_FROM` (any address on a domain in
+   this account) in `api/wrangler.toml`, and point the `[[send_email]]`
+   binding's `destination_address` at the same verified address.
+
+Cloudflare will only deliver to an already-verified destination, which is the
+safeguard that matters: this Worker cannot be turned into a spam relay.
+
+Sending is fire-and-forget, after the response — if mail ever fails, the
+suggestion is still stored and still shows in the queue.
+
+> Enabling Email Routing adds MX and SPF records to the zone. Harmless if the
+> domain carries no mail today, but if you later put Google Workspace or similar
+> on it, those MX records need replacing.
+
 ### Deploy
 
 ```bash

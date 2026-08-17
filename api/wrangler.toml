@@ -17,6 +17,13 @@ compatibility_date = "2024-11-01"
 # Origin header. Keep localhost while developing; drop it before going live.
 ALLOWED_ORIGINS = "https://luta.family,https://www.luta.family,http://localhost:4173"
 
+# Who gets told when a suggestion arrives, and the address it comes from.
+# NOTIFY_TO must be a *verified destination address* in Cloudflare Email
+# Routing, and NOTIFY_FROM must be on a domain in this account.
+NOTIFY_TO = "eduard@dua.com"
+NOTIFY_FROM = "sugjerime@luta.family"
+SITE_URL = "https://luta.family"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "luta-family"
@@ -28,6 +35,14 @@ database_id = "f3e8bad5-e4ba-46d5-832e-18a3f31161f7"
 [[kv_namespaces]]
 binding = "IMAGES"
 id = "e640ff243e5a446fb22028c6e9c7b771"
+
+# Notification mail. Cloudflare Email Routing rather than a third-party sender:
+# no API key to hold, no extra account, free. It will only deliver to an address
+# already verified as a destination in Email Routing, which is the whole point —
+# this Worker cannot be turned into a spam relay.
+[[send_email]]
+name = "NOTIFY"
+destination_address = "eduard@dua.com"
 
 # ADMIN_TOKEN and IP_SALT are secrets, never vars — set them with
 # `wrangler secret put`, so they stay out of this file and out of git.

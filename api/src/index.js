@@ -19,7 +19,13 @@
  *   GET    /api/admin/suggestions?status=pending
  *   POST   /api/admin/suggestions/:id   { "action": "approve"|"reject"|"unreview" }
  *   DELETE /api/admin/suggestions/:id
+ *
+ * A new submission also emails the archive's keeper, because a queue nobody is
+ * told about is a queue nobody reads. The mail is sent after the response, via
+ * waitUntil, so a mail failure can never lose a suggestion.
  */
+
+import { EmailMessage } from 'cloudflare:email';
 
 const MAX_TEXT = 2000;
 const MAX_AUTHOR = 80;
@@ -101,8 +107,64 @@ async function dropImages(env, keys) {
   await Promise.allSettled(keys.map((k) => env.IMAGES.delete(k)));
 }
 
+/* ── notification mail ──────────────────────────────────────────────────── */
+
+/** UTF-8 safe base64, chunked so a long body cannot blow the call stack. */
+function b64(text) {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(binary);
+}
+
+/**
+ * Tells the keeper a suggestion is waiting.
+ *
+ * Every piece of submitted text goes in the body, never in a header: a newline
+ * in an author's name would otherwise let a stranger inject mail headers. The
+ * headers here are entirely of our own making.
+ */
+async function notify(env, { personId, author, text, imageCount }) {
+  if (!env.NOTIFY || !env.NOTIFY_FROM || !env.NOTIFY_TO) return;
+
+  const site = env.SITE_URL || 'https://luta.family';
+  const body = [
+    'Një sugjerim i ri pret shqyrtim.',
+    '',
+    `Personi:    ${personId}`,
+    `            ${site}/#/person/${personId}`,
+    `Nga:        ${author || 'Anonim'}`,
+    `Fotografi:  ${imageCount}`,
+    '',
+    '— — —',
+    text || '(pa tekst — vetëm fotografi)',
+    '— — —',
+    '',
+    `Shqyrtoje këtu: ${site}/admin.html`,
+    '',
+    'Sugjerimi nuk shfaqet në faqe derisa ta miratosh.',
+  ].join('\r\n');
+
+  const raw = [
+    `From: Familja Luta <${env.NOTIFY_FROM}>`,
+    `To: <${env.NOTIFY_TO}>`,
+    'Subject: =?UTF-8?B?' + b64('Sugjerim i ri — Familja Luta') + '?=',
+    `Message-ID: <${crypto.randomUUID()}@luta.family>`,
+    `Date: ${new Date().toUTCString()}`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/plain; charset=UTF-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    b64(body),
+  ].join('\r\n');
+
+  await env.NOTIFY.send(new EmailMessage(env.NOTIFY_FROM, env.NOTIFY_TO, raw));
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const origin = allowedOrigin(request, env);
 
@@ -226,6 +288,14 @@ export default {
           await dropImages(env, keys); // don't leave orphans behind
           throw err;
         }
+
+        // After the response, and swallowing its own errors: the suggestion is
+        // already safely stored, and a bounced notification must not turn a
+        // successful submission into a failure the sender sees.
+        ctx.waitUntil(
+          notify(env, { personId, author, text, imageCount: keys.length })
+            .catch((err) => console.error('notify', err))
+        );
 
         return json({ ok: true, images: keys.length }, 202, origin);
       }

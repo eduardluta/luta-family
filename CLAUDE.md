@@ -14,9 +14,9 @@ being able to fix a date.
 3. **Nothing third-party at runtime.** Fonts and Leaflet are vendored. The only
    external request is OpenStreetMap tiles on the map page. Do not add a CDN.
 4. **The site must work with the API switched off.** `API_BASE = ''` in
-   `assets/js/config.js` is a supported, tested state — suggestions degrade to
-   an email link and nothing else changes. Never make the archive depend on a
-   server.
+   `assets/js/config.js` is a supported, tested state — the suggestion box says
+   so plainly and nothing else changes. Never make the archive depend on a
+   server. (It currently points at `api.luta.family`.)
 
 ## Privacy
 

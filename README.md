@@ -70,20 +70,28 @@ writing anything.
 
 ## Suggestions from the family
 
-Relatives can propose corrections on any person. Every suggestion arrives as
-`pending` and appears on the site **only after an admin approves it** in
-`admin.html`.
+Relatives can propose corrections on any person, and attach up to six
+photographs — someone scans an old picture and sends it in. Every suggestion
+arrives as `pending` and appears on the site **only after an admin approves it**
+at [luta.family/admin.html](https://luta.family/admin.html).
 
-This needs a server, which GitHub Pages cannot provide, so it lives in a small
-Cloudflare Worker under [`api/`](api/). Setup is in
-[`docs/DEPLOY.md`](docs/DEPLOY.md).
+Photographs are downscaled to 1600px in the browser before upload, so a 6 MB
+phone photo arrives around 100–300 KB.
 
-**It is entirely optional.** With `API_BASE` empty in
-[`assets/js/config.js`](assets/js/config.js) — the default — the feature turns
-itself off and the form becomes an email link. The archive never depends on it.
+This needs a server, which GitHub Pages cannot provide, so it runs as a
+Cloudflare Worker at `api.luta.family` — the code is in [`api/`](api/), the
+setup in [`docs/DEPLOY.md`](docs/DEPLOY.md). It stores records in D1 and
+photographs in KV.
 
-Approving a suggestion does not change the archive. It publishes the note. Real
-corrections still get made by editing `data/family.js`.
+**The archive never depends on it.** Set `API_BASE` back to `''` in
+[`assets/js/config.js`](assets/js/config.js) and the feature switches itself off
+cleanly — no failed requests, nothing else on the page changes.
+
+Approving a suggestion publishes that note under the person. It does **not**
+change the archive: real corrections are still made by editing `data/family.js`.
+
+The admin password is a Worker secret (`ADMIN_TOKEN`), set with
+`wrangler secret put` and never stored in this repo.
 
 ## Layout
 

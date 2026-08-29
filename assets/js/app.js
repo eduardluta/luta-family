@@ -46,9 +46,13 @@ for (let g = 1; g <= GENERATIONS; g += 1) {
   chipRow.append(chip);
 }
 
+/* Far enough up that the sticky toolbar clears the top of the window. */
+function treeScrollTop() {
+  return viewport.getBoundingClientRect().top + window.scrollY - 90;
+}
+
 function scrollToTree() {
-  const top = viewport.getBoundingClientRect().top + window.scrollY - 90;
-  window.scrollTo({ top, behavior: 'smooth' });
+  window.scrollTo({ top: treeScrollTop(), behavior: 'smooth' });
 }
 
 /* ── search ──────────────────────────────────────────────────────────────── */
@@ -162,6 +166,27 @@ searchInput.addEventListener('keydown', (e) => {
 });
 
 searchInput.addEventListener('blur', () => setTimeout(closeSearch, 120));
+
+/* The masthead's way in. The nav is not sticky, so this button only exists
+   above the fold — which is exactly where the search field is out of reach, an
+   entire historiati below. It focuses the field the toolbar already carries
+   rather than opening a second one: one input, one result list, one set of
+   keyboard bindings to keep working. */
+$('#nav-search').addEventListener('click', () => {
+  // focus() first, and synchronously: iOS only opens the keyboard for a focus
+  // that happens inside the gesture that asked for it, so it cannot wait for a
+  // scroll to settle. preventScroll stops the browser doing its own jump first.
+  searchInput.focus({ preventScroll: true });
+  // …and then an *instant* scroll, not the smooth one every other jump on this
+  // page uses. Measured in Chrome: moving focus cancels a programmatic smooth
+  // scroll outright — the page simply stays where it was — and it does so
+  // whether the focus comes before or after the call, in a rAF or in a timeout,
+  // and whether or not the target is a form field. An instant scroll has
+  // nothing in flight to cancel. It is the better motion here anyway: this is a
+  // 6000px jump past the whole historiati, and animating that is a long ride to
+  // nowhere.
+  window.scrollTo({ top: treeScrollTop(), behavior: 'instant' });
+});
 
 /* ── routing ─────────────────────────────────────────────────────────────── */
 const dialogHost = $('#dialog-host');

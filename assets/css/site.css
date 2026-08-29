@@ -58,6 +58,14 @@ summary::marker { color: var(--color-accent); }
   font-family: var(--font-body); font-weight: 400; margin-left: 8px;
   white-space: nowrap;
 }
+/* The only control in the masthead, and the reason it is here: the search field
+   itself lives in the tree toolbar, an entire historiati further down. Sized to
+   sit on the 14px nav links rather than tower over them. */
+.nav-search {
+  font-size: 13px; gap: 6px; padding: 6px var(--space-2);
+  color: var(--color-neutral-700);
+}
+.nav-search:hover { color: var(--color-accent-700); border-color: var(--color-accent); }
 
 /* ── header ─────────────────────────────────────────────────────────────── */
 .hero { max-width: 880px; margin: 0 auto; padding: 76px 24px 44px; text-align: center; }
@@ -533,6 +541,13 @@ summary::marker { color: var(--color-accent); }
      name for — drop it rather than let the header overflow. */
   .nav-note { display: none; }
   .nav { gap: var(--space-3); padding: var(--space-3); }
+  /* Brand, two links and a button do not fit a phone with the word "Kërko" in
+     them. The icon carries it; the accessible name is on the button either way.
+     36px square is `.btn-icon` from tokens.css — the house icon-button size.
+     (The zoom controls override it to 42; they float over the canvas and need
+     the extra weight. This one sits in a row of 14px links.) */
+  .nav-search-label { display: none; }
+  .nav-search { width: 36px; height: 36px; padding: 0; }
   .hero { padding: 48px 20px 32px; }
 
   /* Stats become 2×2: the strip's own hairlines carry on, the vertical rule

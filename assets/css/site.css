@@ -127,8 +127,20 @@ summary::marker { color: var(--color-accent); }
   text-align: center; margin: 24px 0 0;
 }
 
+/* The origin theory — boxed and set in italic, so it reads as tradition
+   rather than as the documented record around it. */
+.theory-box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  padding: 22px 26px 24px;
+  margin: 34px 0 8px;
+}
+.theory-box .kicker { margin: 0 0 12px; }
+.theory-box .prose { font-style: italic; margin: 0; }
+
 /* The DNA result that accompanies the origin theory — kept small. */
-.dna-plate { margin: 20px auto 6px; max-width: 560px; text-align: center; }
+.dna-plate { margin: 20px auto 0; max-width: 560px; text-align: center; }
 .dna-plate img {
   width: 100%; height: auto; display: block;
   border: 1px solid var(--color-divider);

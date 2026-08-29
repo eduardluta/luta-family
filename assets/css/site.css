@@ -313,6 +313,13 @@ summary::marker { color: var(--color-accent); }
 .person-dialog {
   width: min(580px, 100%); max-height: 88vh; overflow: auto; gap: 14px;
   animation: dlgRise 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Without this, scrolling past the end of the record carries on into the
+     page behind the sheet — on iOS the tree drifts under the backdrop and the
+     sheet rubber-bands. `overflow: hidden` on the body does not stop it.
+     Do NOT add `scroll-behavior: smooth` here: against this scrollport's
+     sticky header it fights itself and the sheet crawls a few pixels and
+     stops, breaking every scroll — including the jump to the suggestion form. */
+  overscroll-behavior: contain;
 }
 
 /* On a phone the dialog is a bottom sheet — reachable with a thumb, and the
@@ -594,4 +601,21 @@ summary::marker { color: var(--color-accent); }
   .lineage { line-height: 1.8; }
   /* The trailing "Mbyll" is redundant once the header carries an ×. */
   .person-dialog .dialog-actions { display: none; }
+
+  /* ── the suggestion form on a phone ──
+     Everything here is sized for a thumb rather than a cursor: 23px of button
+     is not a target anyone can hit on the first try. */
+  .suggest-head .btn {
+    font-size: 14px; min-height: 44px; padding: 0 12px; margin-right: -12px;
+  }
+  /* 16px is not decoration. Focusing a field smaller than that makes iOS zoom
+     the page in, and nothing zooms it back out — the single reason this form
+     felt broken on iPhones and fine on Android. */
+  .suggest-form .input { font-size: 16px; min-height: 44px; }
+  .suggest-form textarea.input { min-height: 104px; }
+  .suggest-form .input[type='text'] { max-width: none; }
+  .suggest-actions { gap: 12px; }
+  .suggest-actions .btn { min-height: 44px; padding-inline: 20px; }
+  .suggest-hint { max-width: none; }
+  .suggest-thumb-x { width: 28px; height: 28px; font-size: 18px; top: -9px; right: -9px; }
 }

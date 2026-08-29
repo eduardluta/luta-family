@@ -252,7 +252,15 @@ export function mountSuggestions(person) {
   toggle.addEventListener('click', () => {
     form.hidden = !form.hidden;
     toggle.textContent = form.hidden ? '+ Shto sugjerim' : 'Anulo';
-    if (!form.hidden) (name.value ? text : name).focus();
+    if (form.hidden) return;
+    // A cursor wants the caret waiting in the first field. A thumb does not:
+    // focusing throws the keyboard up over the sheet before you have even seen
+    // the form. Bring it into view instead, and let the next tap open it.
+    if (window.matchMedia?.('(pointer: coarse)').matches) {
+      form.scrollIntoView({ block: 'nearest' });
+    } else {
+      (name.value ? text : name).focus();
+    }
   });
 
   const say = (message, kind) => {

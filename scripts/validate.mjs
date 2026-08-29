@@ -71,6 +71,15 @@ for (const p of PEOPLE) {
   (p.partners || []).forEach((q, i) => {
     if (!q.name?.trim()) fail(`${who}: partner ${i} has no name`);
   });
+
+  // `union` indexes the parent's partners. An index that has drifted past the
+  // end would hang a child under the wrong mother, or under nobody.
+  if (p.union != null) {
+    const spouses = (byId.get(p.parent)?.partners || []).length;
+    if (!Number.isInteger(p.union) || p.union < 0 || p.union >= spouses) {
+      fail(`${who}: union ${JSON.stringify(p.union)} but the parent has ${spouses} spouse(s)`);
+    }
+  }
 }
 
 /* Exactly one root, and no cycles: walking up from anyone must terminate. */
@@ -90,6 +99,17 @@ for (const p of PEOPLE) {
 
 for (const file of photos) {
   if (!usedPhotos.has(file)) warn(`assets/photos/${file} is not referenced by anyone`);
+}
+
+/* Children of a parent who married twice, whom the source never assigned to
+   either marriage. They show on the parent's page but on no spouse's — the
+   archive omits rather than guesses. Add "union" when someone knows. */
+for (const p of PEOPLE) {
+  if ((p.partners || []).length < 2) continue;
+  const loose = PEOPLE.filter((c) => c.parent === p.id && c.union == null);
+  if (loose.length) {
+    warn(`${p.name}: ${loose.length} child(ren) not assigned to a marriage — ${loose.map((c) => c.name).join(', ')}`);
+  }
 }
 
 /* ── report ── */

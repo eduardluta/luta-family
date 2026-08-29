@@ -90,6 +90,7 @@ export function partnerView(person, index) {
   const m = /^(.*?)\s*\((\d{4})(?:\s*[-–]\s*(\d{4}))?\)$/.exec(partner.name || '');
   return {
     id: partnerId(person, index),
+    index,
     person,
     partner,
     name: m ? m[1] : (partner.name || ''),
@@ -98,6 +99,18 @@ export function partnerView(person, index) {
     photo: partner.photo || '',
     bio: partner.bio || '',
   };
+}
+
+/**
+ * The children of one marriage. With a single spouse there is nothing to
+ * disambiguate. With several, a child belongs to the spouse its `union` names;
+ * a child the source never attributed appears on the person's page but on no
+ * spouse's, because guessing at someone's mother is not the archive's job.
+ */
+export function childrenOfUnion(person, index) {
+  const kids = childrenOf(person.id);
+  if ((person.partners || []).length <= 1) return kids;
+  return kids.filter((c) => c.union === index);
 }
 
 /** Resolves a partner id back to its view, or null for anything else. */

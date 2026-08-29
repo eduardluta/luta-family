@@ -15,7 +15,7 @@
  */
 
 import {
-  get, given, childrenOf, lineage, lifespan, initials,
+  get, given, childrenOf, childrenOfUnion, lineage, lifespan, initials,
   branchLabel, getPartner, partnerView, ROMAN,
 } from './model.js';
 import { mountSuggestions } from './suggestions.js';
@@ -137,6 +137,23 @@ function personRow({ photo, name, meta }, onClick) {
 
 /** The biography is verbatim from the archive or nothing: when the manuscript
  *  has no paragraph for someone, the block says so rather than generating one. */
+/** The children row, shared by a person's page and a spouse's. */
+function childrenBlock(kids, onNavigate) {
+  if (!kids.length) return null;
+  const box = el('div');
+  box.append(el('div', 'fact-l', `Fëmijët (${kids.length})`));
+  const row = el('div', 'children');
+  for (const child of kids) {
+    const y = lifespan(child).split('–')[0];
+    const btn = el('button', 'btn btn-secondary', y ? `${given(child)} · ${y}` : given(child));
+    btn.type = 'button';
+    btn.addEventListener('click', () => onNavigate(child.id));
+    row.append(btn);
+  }
+  box.append(row);
+  return box;
+}
+
 function bioBlock(text) {
   const bio = el('div', 'bio-block');
   bio.append(el('div', 'fact-l', 'Biografia'));
@@ -225,21 +242,8 @@ export function renderPerson(person, onNavigate) {
   }
 
   /* ── children ── */
-  const kids = childrenOf(person.id);
-  if (kids.length) {
-    const box = el('div');
-    box.append(el('div', 'fact-l', `Fëmijët (${kids.length})`));
-    const row = el('div', 'children');
-    for (const child of kids) {
-      const y = lifespan(child).split('–')[0];
-      const btn = el('button', 'btn btn-secondary', y ? `${given(child)} · ${y}` : given(child));
-      btn.type = 'button';
-      btn.addEventListener('click', () => onNavigate(child.id));
-      row.append(btn);
-    }
-    box.append(row);
-    dialog.append(box);
-  }
+  const kids = childrenBlock(childrenOf(person.id), onNavigate);
+  if (kids) dialog.append(kids);
 
   /* ── biography ── */
   dialog.append(bioBlock(person.bio));
@@ -290,6 +294,10 @@ export function renderPartner(view, onNavigate) {
   ));
   box.append(list);
   dialog.append(box);
+
+  /* ── children of this marriage ── */
+  const kids = childrenBlock(childrenOfUnion(person, view.index), onNavigate);
+  if (kids) dialog.append(kids);
 
   dialog.append(bioBlock(view.bio));
 

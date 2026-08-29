@@ -66,9 +66,16 @@ summary that restated the record in prose is gone, do not bring it back.
   because someone arriving on a shared link has no earlier entry to go back to.
 - **Partner order is load-bearing.** A spouse's page is `#/person/<id>-p<n>` —
   the index into `partners`, same convention as the photo files, and a shape
-  the API's personId check accepts. Shared links and suggestions are keyed to
-  it, so spouses are append-only; `validate.mjs` refuses tree ids ending in
-  `-p<n>` to keep the namespace clear.
+  the API's personId check accepts. Shared links, suggestions and each child's
+  `union` are all keyed to that index, so spouses are append-only; reordering
+  them silently reassigns children to the wrong mother. `validate.mjs` refuses
+  tree ids ending in `-p<n>` and range-checks every `union`.
+- **Children are attributed, never inferred.** `unionNote` is declined Albanian
+  prose ("me Even" for Eva, "me Florentina Morinën" for Morina), so it cannot
+  be matched to a spouse at runtime. The numeric `union` was read from it once
+  and is now ordinary data. Eleven children the source never assigned — the
+  eight of Tahir and the three of Milot — carry no `union` and so appear under
+  their father but on no wife's page. `validate.mjs` warns about them by name.
 
 ## Before pushing
 

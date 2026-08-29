@@ -190,11 +190,11 @@ export function renderPerson(person, onNavigate) {
   const tagList = [['tag-outline', `Gjenerata ${ROMAN[person.gen]}`]];
   const branch = branchLabel(person);
   if (branch) tagList.push(['tag-neutral', branch]);
-  dialog.append(head(person, lifespan(person), person.uncertain, tagList, person.id));
+  dialog.append(head(person, person.birthDate || lifespan(person), person.uncertain, tagList, person.id));
 
   /* ── facts ── */
   const facts = el('div', 'facts');
-  facts.append(fact('Data e lindjes', person.birth ? String(person.birth) : '', { tnum: true }));
+  facts.append(fact('Data e lindjes', person.birthDate || (person.birth ? String(person.birth) : ''), { tnum: true }));
   facts.append(fact('Vendi i lindjes', person.birthPlace));
   facts.append(fact('Profesioni', person.profession));
   facts.append(fact('Vendbanimi', person.residence));
@@ -272,11 +272,11 @@ export function renderPartner(view, onNavigate) {
   const tagList = [['tag-outline', person.sex === 'm' ? 'Bashkëshorte' : 'Bashkëshort']];
   const branch = branchLabel(person);
   if (branch) tagList.push(['tag-neutral', branch]);
-  dialog.append(head(view, view.years, false, tagList, view.id));
+  dialog.append(head(view, view.birthDate || view.years, false, tagList, view.id));
 
   /* ── facts — the same record a tree person gets ── */
   const facts = el('div', 'facts');
-  facts.append(fact('Data e lindjes', view.birth ? String(view.birth) : '', { tnum: true }));
+  facts.append(fact('Data e lindjes', view.birthDate || (view.birth ? String(view.birth) : ''), { tnum: true }));
   facts.append(fact('Vendi i lindjes', partner.birthPlace));
   facts.append(fact('Profesioni', partner.profession));
   facts.append(fact('Vendbanimi', partner.residence));

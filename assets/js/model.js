@@ -96,6 +96,7 @@ export function partnerView(person, index) {
     name: m ? m[1] : (partner.name || ''),
     years: m ? (m[3] ? `${m[2]}–${m[3]}` : m[2]) : '',
     birth: m ? Number(m[2]) : null,
+    birthDate: partner.birthDate || '',
     photo: partner.photo || '',
     bio: partner.bio || '',
   };

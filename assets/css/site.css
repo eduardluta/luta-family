@@ -127,6 +127,14 @@ summary::marker { color: var(--color-accent); }
   text-align: center; margin: 24px 0 0;
 }
 
+/* The DNA result that accompanies the origin theory — kept small. */
+.dna-plate { margin: 20px auto 6px; max-width: 560px; text-align: center; }
+.dna-plate img {
+  width: 100%; height: auto; display: block;
+  border: 1px solid var(--color-divider);
+}
+.dna-plate figcaption { margin-top: 9px; }
+
 /* ── tree toolbar ───────────────────────────────────────────────────────── */
 .toolbar {
   position: sticky; top: 0; z-index: 30; margin-top: 24px;

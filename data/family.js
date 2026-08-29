@@ -162,7 +162,7 @@ export const PEOPLE = [
   {"id":"zazk7","parent":"zaz6","gen":7,"branch":"zenullah","name":"Krenare Luta","sex":"f","years":"1985","birth":1985,"death":null},
   {"id":"zazg7","parent":"zaz6","gen":7,"branch":"zenullah","name":"Genti Luta","sex":"m","years":"1992","birth":1992,"death":null},
   {"id":"zazgr7","parent":"zaz6","gen":7,"branch":"zenullah","name":"Greta Luta","sex":"f","years":"1994","birth":1994,"death":null},
-  {"id":"mavge8","parent":"mavg7","gen":8,"branch":"mustafa","name":"Eduard Luta","sex":"m","years":"1989","birth":1989,"death":null,"photo":"mavge8.jpg"},
+  {"id":"mavge8","parent":"mavg7","gen":8,"branch":"mustafa","name":"Eduard Luta","sex":"m","years":"1989","birth":1989,"birthDate":"10.11.1989","death":null,"birthPlace":"Pejë","profession":"Sipërmarrës","residence":"Prishtinë","photo":"mavge8.jpg","partners":[{"name":"Dezera Berisha (1992)","birthDate":"15.10.1992","birthPlace":"Västervik, Suedi","profession":"Artiste","residence":"Prishtinë","photo":"mavge8-p0.jpg"}]},
   {"id":"mavgo8","parent":"mavg7","gen":8,"branch":"mustafa","name":"Edona Luta","sex":"f","years":"1991","birth":1991,"death":null},
   {"id":"mavgs8","parent":"mavg7","gen":8,"branch":"mustafa","name":"Edison Luta","sex":"m","years":"1992","birth":1992,"death":null},
   {"id":"mavgn8","parent":"mavg7","gen":8,"branch":"mustafa","name":"Edon Luta","sex":"m","years":"2000","birth":2000,"death":null},
@@ -216,6 +216,8 @@ export const PEOPLE = [
   {"id":"zrnska8","parent":"zrnsk7","gen":8,"branch":"zenullah","name":"Anila Luta","sex":"f","years":"2003","birth":2003,"death":null},
   {"id":"zrvft8","parent":"zrvf7","gen":8,"branch":"zenullah","name":"Teuta / Tuana Luta","sex":"f","years":"2012 †","birth":2012,"death":null,"uncertain":true,"sourceNote":"Emri jepet Teuta ne pershkrim dhe Tuana ne permbledhje."},
   {"id":"zazda8","parent":"zazd7","gen":8,"branch":"zenullah","name":"Aja Luta","sex":"f","years":"2013","birth":2013,"death":null},
+  {"id":"mavgem9","parent":"mavge8","gen":9,"branch":"mustafa","name":"Marin Luta","sex":"m","years":"2019","birth":2019,"birthDate":"17.08.2019","death":null,"birthPlace":"Prishtinë","residence":"Prishtinë","photo":"mavgem9.jpg","union":0},
+  {"id":"mavged9","parent":"mavge8","gen":9,"branch":"mustafa","name":"Diell Luta","sex":"m","years":"2024","birth":2024,"birthDate":"16.09.2024","death":null,"birthPlace":"Prishtinë","residence":"Prishtinë","photo":"mavged9.jpg","union":0},
   {"id":"mavnme9","parent":"mavnm8","gen":9,"branch":"mustafa","name":"Edra Luta","sex":"f","years":"2001/07 †","birth":2001,"death":null,"uncertain":true,"sourceNote":"Viti i lindjes jepet 2001 ne pershkrim dhe 2007 ne permbledhje."},
   {"id":"mavnml9","parent":"mavnm8","gen":9,"branch":"mustafa","name":"Leandra Luta","sex":"f","years":"2008","birth":2008,"death":null},
   {"id":"mavnmr9","parent":"mavnm8","gen":9,"branch":"mustafa","name":"Risani Luta","sex":"m","years":"2013","birth":2013,"death":null}

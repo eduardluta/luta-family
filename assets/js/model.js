@@ -2,9 +2,9 @@
  * model.js — everything the rest of the site asks about the family record.
  *
  * data/family.js is a flat list. This turns it into the shapes the UI needs
- * (lookup by id, children of a person, a lineage back to the root) and holds
- * the Albanian-language rules — roman numerals, name shortening, the
- * diacritic-insensitive search key, and grammatical agreement.
+ * (lookup by id, children of a person, a lineage back to the root, a view of
+ * a spouse) and holds the Albanian-language rules — roman numerals, name
+ * shortening, and the diacritic-insensitive search key.
  */
 
 import { PEOPLE, BRANCHES, ROOT_ID } from '../../data/family.js';
@@ -25,8 +25,6 @@ for (const p of PEOPLE) {
 export const get = (id) => byId.get(id) || null;
 export const childrenOf = (id) => children.get(id) || [];
 export const parentOf = (p) => (p && p.parent ? byId.get(p.parent) : null);
-export const siblingsOf = (p) =>
-  p && p.parent ? childrenOf(p.parent).filter((c) => c.id !== p.id) : [];
 
 /** First name only. The tree labels generations 4+ this way — full names at
  *  118px would collide, and within a branch the given name is unambiguous. */
@@ -72,41 +70,40 @@ export const STATS = {
     PEOPLE.reduce((a, p) => a + (p.partners || []).filter((q) => q.photo).length, 0),
 };
 
-/* ── grammatical agreement ───────────────────────────────────────────────
-   Albanian agrees participles and possessives with gender. A summary line that
-   says "i lindur" about a woman reads as broken to a native speaker, so the
-   record carries `sex` and every generated sentence goes through here. */
-const ORDINAL = ['', 'parë', 'dytë', 'tretë', 'katërt', 'pestë', 'gjashtë', 'shtatë', 'tetë', 'nëntë', 'dhjetë'];
+/* ── spouses ─────────────────────────────────────────────────────────────
+   Partners are recorded on the person, not as entries of their own, yet each
+   deserves a page. "<personId>-p<index>" names one — the same convention the
+   photo files already use (mjo6-p0.jpg) — so the id survives the API's
+   personId check and a partner's page can collect suggestions like anyone
+   else's. The index makes partner order in family.js load-bearing: append,
+   never reorder. */
+export const partnerId = (person, index) => `${person.id}-p${index}`;
 
 /**
- * The fallback biography, for the ~100 people the family history lists by name
- * without a paragraph of their own. It states only what the record actually
- * knows — generation, siblings, and the line back to the root.
+ * A partner as the UI wants it. The archive writes years inside the name
+ * string, verbatim from the source — "Kismete Dobroshi (1962-1992)" — so the
+ * view splits them apart for display.
  */
-export function summarise(p) {
-  const male = p.sex === 'm';
-  const sibs = siblingsOf(p);
-  const father = parentOf(p);
-  const out = [];
+export function partnerView(person, index) {
+  const partner = (person.partners || [])[index];
+  if (!partner) return null;
+  const m = /^(.*?)\s*\((\d{4})(?:\s*[-–]\s*(\d{4}))?\)$/.exec(partner.name || '');
+  return {
+    id: partnerId(person, index),
+    person,
+    partner,
+    name: m ? m[1] : (partner.name || ''),
+    years: m ? (m[3] ? `${m[2]}–${m[3]}` : m[2]) : '',
+    birth: m ? Number(m[2]) : null,
+    photo: partner.photo || '',
+    bio: partner.bio || '',
+  };
+}
 
-  const born = p.birth ? `${male ? ', i lindur më ' : ', e lindur më '}${p.birth}` : '';
-  out.push(
-    `${p.name}${born}, është ${male ? 'pjesëtar i' : 'pjesëtare e'} gjeneratës së ` +
-      `${ORDINAL[p.gen] || p.gen} të familjes Luta.`
-  );
-
-  if (sibs.length) {
-    const names = sibs.map(given);
-    const list =
-      names.length > 1 ? `${names.slice(0, -1).join(', ')} dhe ${names.at(-1)}` : names[0];
-    out.push(`Në trung renditet së bashku me ${list}.`);
-  }
-
-  if (father) {
-    out.push(
-      `Linja familjare ngjitet nga ${given(father)} Luta deri te rrënja e trungut — ` +
-        `${get(ROOT_ID).name}, i shënuar në vitin 1700 në Pejë.`
-    );
-  }
-  return out.join(' ');
+/** Resolves a partner id back to its view, or null for anything else. */
+export function getPartner(id) {
+  const m = /^(.+)-p(\d+)$/.exec(id || '');
+  if (!m) return null;
+  const person = byId.get(m[1]);
+  return person ? partnerView(person, Number(m[2])) : null;
 }

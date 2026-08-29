@@ -8,7 +8,7 @@
 
 import {
   PEOPLE, ROMAN, GENERATIONS, STATS,
-  get, given, searchKey, lifespan,
+  get, getPartner, partnerId, given, searchKey, lifespan,
 } from './model.js';
 import { TreeCanvas } from './tree.js';
 import { openPerson } from './person.js';
@@ -73,12 +73,12 @@ function findPeople(query) {
       });
       continue;
     }
-    const spouse = (person.partners || []).find((p) => searchKey(p.name).includes(q));
-    if (spouse) {
+    const si = (person.partners || []).findIndex((p) => searchKey(p.name).includes(q));
+    if (si >= 0) {
       out.push({
-        id: person.id,
-        name: spouse.name,
-        meta: `bashkëshorte · ${given(person)} Luta`,
+        id: partnerId(person, si),
+        name: person.partners[si].name,
+        meta: `${person.sex === 'm' ? 'bashkëshorte' : 'bashkëshort'} · ${given(person)} Luta`,
       });
     }
   }
@@ -174,19 +174,23 @@ let replacingDialog = false;
 
 const PERSON_ROUTE = /^#\/person\/(.+)$/;
 
+/** A spouse's page is anchored on the tree at the person they married. */
+const anchorOf = (id) => (get(id) ? id : getPartner(id)?.person.id);
+
 /** Move the canvas to a person, highlight them, then open their record. */
 function jumpTo(id) {
-  if (!get(id)) return;
-  tree.focusPerson(id);
-  tree.flash(id);
+  const anchor = anchorOf(id);
+  if (!anchor) return;
+  tree.focusPerson(anchor);
+  tree.flash(anchor);
   scrollToTree();
   // Let the scroll settle before the dialog covers the thing it scrolled to.
   setTimeout(() => navigateTo(id), 450);
 }
 
-/** Opening a person is a navigation — it goes in the URL and the back button. */
+/** Opening a record is a navigation — it goes in the URL and the back button. */
 function navigateTo(id) {
-  if (!get(id)) return;
+  if (!get(id) && !getPartner(id)) return;
   const target = `#/person/${id}`;
   if (window.location.hash === target) showPerson(id);
   else window.location.hash = target;
@@ -217,8 +221,8 @@ function showPerson(id) {
 
 function applyRoute() {
   const match = PERSON_ROUTE.exec(window.location.hash);
-  if (match && get(match[1])) {
-    tree.focusPerson(match[1]);
+  if (match && anchorOf(match[1])) {
+    tree.focusPerson(anchorOf(match[1]));
     showPerson(match[1]);
   } else if (openId) {
     closeDialog?.();

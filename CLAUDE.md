@@ -22,9 +22,8 @@ being able to fix a date.
 
 This is a public domain publishing ~120 living people, including children.
 
-- **No phone numbers.** The field was deliberately removed from the data model
-  and the dialog. Do not reintroduce it.
-- Social links are opt-in per person and simply omitted when absent.
+- **No phone numbers, no social links.** Both fields were deliberately removed
+  from the data model and the dialog. Do not reintroduce them.
 - Suggestions are moderated: nothing a stranger types appears until approved.
 - The API stores a salted hash of the submitter's IP for rate limiting, never
   the address.
@@ -39,11 +38,16 @@ itself, `sourceNote` records the contradiction and `uncertain: true` shows a †
 `birthPlace` / `profession` / `residence` were extracted once by script and are
 guesses. They are ordinary editable fields now; nothing regenerates them.
 
+Empty fields show "Nuk është shënuar" — but the biography is never generated.
+It is verbatim from the manuscript or the same "not recorded" note; the old
+summary that restated the record in prose is gone, do not bring it back.
+
 ## Albanian
 
 - Names fold ë→e, ç→c, j→i for search, so ASCII typing finds everything.
-- `sex` drives grammatical agreement in generated summaries ("i lindur" vs
-  "e lindur"). It is data, not a heuristic, precisely so it can be corrected.
+- `sex` drives grammatical agreement in generated copy — "Bashkëshorte" vs
+  "Bashkëshort" for a spouse is inflected from the sex of the person they
+  married. It is data, not a heuristic, precisely so it can be corrected.
 - All user-facing copy is Albanian. Keep it that way.
 
 ## Things that bit us
@@ -60,6 +64,11 @@ guesses. They are ordinary editable fields now; nothing regenerates them.
   `onClose` must not act on the URL during that teardown — hence the
   `replacingDialog` flag. Closing uses `replaceState`, not `history.back()`,
   because someone arriving on a shared link has no earlier entry to go back to.
+- **Partner order is load-bearing.** A spouse's page is `#/person/<id>-p<n>` —
+  the index into `partners`, same convention as the photo files, and a shape
+  the API's personId check accepts. Shared links and suggestions are keyed to
+  it, so spouses are append-only; `validate.mjs` refuses tree ids ending in
+  `-p<n>` to keep the namespace clear.
 
 ## Before pushing
 

@@ -17,8 +17,12 @@
  *   birth/death numbers for sorting; null when unknown
  *   uncertain   true when the sources disagree — the site shows a † marker
  *   photo       filename in assets/photos/
- *   partners    spouses, with optional photo and marriage year
- *   socials     { instagram, facebook, linkedin, tiktok } — omit if none
+ *   partners    spouses — { name, photo?, married?, birthPlace?, profession?,
+ *               residence?, bio? }. Years stay inside the name string,
+ *               verbatim: "Kismete Dobroshi (1962-1992)". Each spouse gets a
+ *               page at #/person/<id>-p<index> showing the same fields as
+ *               anyone else, and links and comments are keyed to that index —
+ *               append a new spouse at the end, never reorder them.
  *   bio         verbatim from the family history, in the original Albanian
  *   unionNote   which marriage these children came from
  *   sourceNote  a recorded contradiction in the source document

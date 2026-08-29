@@ -38,6 +38,9 @@ for (const p of PEOPLE) {
   const who = `${p.id} (${p.name})`;
 
   if (!p.name?.trim()) fail(`${p.id}: missing name`);
+  // "<id>-p<n>" addresses partner n of person <id> (their page and their
+  // suggestions), so a tree person must never claim an id of that shape.
+  if (/-p\d+$/.test(p.id)) fail(`${p.id}: ids ending in -p<number> are reserved for spouse pages`);
   if (!['m', 'f'].includes(p.sex)) fail(`${who}: sex must be 'm' or 'f', got ${JSON.stringify(p.sex)}`);
   if (!Number.isInteger(p.gen) || p.gen < 1) fail(`${who}: gen must be a positive integer`);
   if (p.branch && !BRANCHES[p.branch]) fail(`${who}: unknown branch "${p.branch}"`);
@@ -63,9 +66,11 @@ for (const p of PEOPLE) {
     if (photos.size && !photos.has(file)) fail(`${who}: photo "${file}" is not in assets/photos/`);
   }
 
-  for (const [network, url] of Object.entries(p.socials || {})) {
-    if (typeof url !== 'string' || !url.trim()) fail(`${who}: empty ${network} link — omit the key instead`);
-  }
+  // Partners render as pages of their own, keyed by their position — so a
+  // nameless one is a broken page, and reordering breaks shared links.
+  (p.partners || []).forEach((q, i) => {
+    if (!q.name?.trim()) fail(`${who}: partner ${i} has no name`);
+  });
 }
 
 /* Exactly one root, and no cycles: walking up from anyone must terminate. */

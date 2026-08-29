@@ -75,7 +75,7 @@
 
 <script type="module">
 import { API_BASE } from './assets/js/config.js';
-import { get } from './assets/js/model.js';
+import { get, getPartner } from './assets/js/model.js';
 import { imageUrl } from './assets/js/suggestions.js';
 
 const $ = (s) => document.querySelector(s);
@@ -155,7 +155,9 @@ async function load() {
 }
 
 function render(item) {
+  // A suggestion may be about a tree person or about a spouse (id "<id>-p<n>").
   const person = get(item.personId);
+  const spouse = person ? null : getPartner(item.personId);
   const entry = document.createElement('div');
   entry.className = 'entry';
 
@@ -164,10 +166,14 @@ function render(item) {
 
   const who = document.createElement('span');
   who.className = 'entry-person';
-  who.textContent = person ? person.name : `(person i panjohur: ${item.personId})`;
+  if (person) who.textContent = person.name;
+  else if (spouse) {
+    who.textContent =
+      `${spouse.name} (${spouse.person.sex === 'm' ? 'bashkëshorte' : 'bashkëshort'} · ${spouse.person.name})`;
+  } else who.textContent = `(person i panjohur: ${item.personId})`;
   top.append(who);
 
-  if (person) {
+  if (person || spouse) {
     const link = document.createElement('a');
     link.href = `index.html#/person/${item.personId}`;
     link.target = '_blank';

@@ -325,6 +325,16 @@ summary::marker { color: var(--color-accent); }
   color: var(--color-neutral-600);
 }
 .dialog-close:hover { color: var(--color-accent-700); }
+/* Share sits in the header, not the action row — the action row is hidden on
+   phones, and phones are where sharing happens. */
+.dialog-share {
+  margin-left: auto; align-self: flex-start; flex: none;
+  background: none; border: 0; cursor: pointer; padding: 5px 8px 0 2px;
+  font-family: var(--font-body); font-size: 12.5px;
+  color: var(--color-accent-700); white-space: nowrap;
+}
+.dialog-share:hover { color: var(--color-accent-800); text-decoration: underline; text-underline-offset: 2px; }
+.dialog-share + .dialog-close { margin-left: 0; }
 .person-photo, .person-initials {
   width: 84px; height: 84px; flex: none; border-radius: 50%;
   border: 2px solid var(--color-accent-400);
@@ -364,8 +374,17 @@ summary::marker { color: var(--color-accent); }
 .lineage button:hover { color: var(--color-accent-800); }
 .lineage [aria-current='true'] { color: var(--color-text); font-weight: 600; }
 
-.partners { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-.partner { display: flex; align-items: center; gap: 10px; }
+.partners { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; align-items: flex-start; }
+/* Each spouse is a page of their own, so the row is a button. */
+.partner {
+  display: flex; align-items: center; gap: 10px;
+  background: none; border: 0; padding: 2px 0; cursor: pointer;
+  font: inherit; color: inherit; text-align: left;
+}
+.partner:hover .partner-name {
+  color: var(--color-accent-800);
+  text-decoration: underline; text-underline-offset: 2px;
+}
 .partner img {
   width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex: none;
   border: 1.5px solid var(--color-accent-400);
@@ -377,8 +396,6 @@ summary::marker { color: var(--color-accent); }
 
 .children { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
 .children .btn { padding: 6px 11px; font-size: 13px; }
-.socials { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
-.socials .btn { padding: 3px 10px; font-size: 12px; text-decoration: none; }
 
 .bio-block { border-top: 1px solid var(--color-divider); padding-top: 12px; }
 .bio-block .fact-l { color: var(--color-accent-700); }

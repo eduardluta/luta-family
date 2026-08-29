@@ -162,7 +162,7 @@ export const PEOPLE = [
   {"id":"zazk7","parent":"zaz6","gen":7,"branch":"zenullah","name":"Krenare Luta","sex":"f","years":"1985","birth":1985,"death":null},
   {"id":"zazg7","parent":"zaz6","gen":7,"branch":"zenullah","name":"Genti Luta","sex":"m","years":"1992","birth":1992,"death":null},
   {"id":"zazgr7","parent":"zaz6","gen":7,"branch":"zenullah","name":"Greta Luta","sex":"f","years":"1994","birth":1994,"death":null},
-  {"id":"mavge8","parent":"mavg7","gen":8,"branch":"mustafa","name":"Eduard Luta","sex":"m","years":"1989","birth":1989,"death":null},
+  {"id":"mavge8","parent":"mavg7","gen":8,"branch":"mustafa","name":"Eduard Luta","sex":"m","years":"1989","birth":1989,"death":null,"photo":"mavge8.jpg"},
   {"id":"mavgo8","parent":"mavg7","gen":8,"branch":"mustafa","name":"Edona Luta","sex":"f","years":"1991","birth":1991,"death":null},
   {"id":"mavgs8","parent":"mavg7","gen":8,"branch":"mustafa","name":"Edison Luta","sex":"m","years":"1992","birth":1992,"death":null},
   {"id":"mavgn8","parent":"mavg7","gen":8,"branch":"mustafa","name":"Edon Luta","sex":"m","years":"2000","birth":2000,"death":null},
